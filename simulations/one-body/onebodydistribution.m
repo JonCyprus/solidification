@@ -14,6 +14,10 @@ projectRoot = fullfile(thisDir, '..', '..', '..');
 
 addpath(genpath(fullfile(projectRoot,'lib')));
 
+% Load params from config dir
+configDir = fullfile(projectRoot, 'config');
+sharedParams = load_params(fullfile(configDir, 'shared'));
+onebodyParams = load_params(fullefile(configDir, 'one_body'));
 
 % Loading.mat with intp2_ref (p0_12) and v2_12(Morse2D) functions
 load onebody_params.mat

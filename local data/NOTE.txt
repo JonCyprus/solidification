@@ -1,0 +1,4 @@
+This directory is primarily for testing purposes. Eventually there will be
+ a cloud storage set-up with Amazon S3 and a SQL database that can be 
+interacted with. This will be for the purposes of multi-device access as 
+well as standardizing conventions/names without extreme file clutter.

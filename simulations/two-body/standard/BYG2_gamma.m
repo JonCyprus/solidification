@@ -1,7 +1,7 @@
 % This script finds the two-body distribution function for a uniform liquid
 % in two dimensions.
 
-%%%%%%%%%%%%%%%%% Access the functions from the library
+%%%%%%%%%%%%%%%%% Access the functions from the library and params
 thisFile = mfilename('fullpath');
 thisDir = fileparts(thisFile);
 
@@ -10,26 +10,32 @@ projectRoot = fullfile(thisDir, '..', '..', '..');
 
 addpath(genpath(fullfile(projectRoot,'lib')));
 
-%%% Overall parameters
-max_t = 1e-4;           % increment of time
-kb = 8.61733262e-5;     %Boltzmann constant eV/K
-T = 1200;               % temperature (K), regulates diffusion term, changes
-kbT = kb * T;           %kb .* T;  % Product of kb and T; kbT = 0.1215 eV at 1410K (From MD)
-G = 1.;                 % overall mobility constant (in non-constant gamma)
-red = 16;               % factor that reduces the set of frequencies
+% Load params from config dir
+configDir = fullfile(projectRoot, 'config');
+sharedParams = load_params(fullfile(configDir, 'shared', 'shared_params.json'));
+twobodyParams = load_params(fullfile(configDir, 'two_body', 'two_body_params.json'));
 
+%%% Simulation parameters
+kb = sharedParams.boltzmann;     %Boltzmann constant eV/K
+T = sharedParams.temperature;    % temperature (K), regulates diffusion term, changes
+G = sharedParams.mobility;       % overall mobility constant (in non-constant gamma)
+kbT = kb * T;                    %kb .* T;  % Product of kb and T; kbT = 0.1215 eV at 1410K (From MD)
+
+max_t = 1e-4;           % increment of time
+red = 16;               % factor that reduces the set of frequencies
 max_steps = 5000000;
-%%% Morse Potential Paramaters:
-D = 0.3429;             %From Paper --Add Citation Here--
+
+%%% Morse Potential Paramaters: NOTE: ADD TO SEP PARAMS.JSON
+D = 0.3429;             % From Paper --Add Citation Here--
 alpha = 1.3588;         % From Paper --Add Citation Here--
 Re = 2.866;             % Lattice Parameter from LAMMPS (Angstroms)
 Rc = 15;                % Used in LAMMPS
 
-%%% Two dimensional parameters
+%%% Two dimensional parameters: NOTE: ADD TO TWO_BODY PARAMS.JSON
 L = 0.5 .* 38.9823 * Re;      % length of simulation cell edge, adjusted for density 0.1362 atoms/angstrom^2 from L=40
-N = 0.25 .* 1700 * 1.;               % number of particles
+N = 0.25 .* 1700 * 1.;        % number of particles
 
-%%% Uniform liquid parameters
+%%% Uniform liquid parameters NOTE: ADD TO SHARED_PARAMS.JSON
 n = 2 * 4096;           % number of lattice sites in one dimension
 R = 0.5 * L;            % maximum distance of interacting particles \ Was 20 when L was 40
 
@@ -95,13 +101,6 @@ T1 = besselj( 1, k * r' );
 %%% Creates the modified potential with the polynomial of given conditions
 f1 = poly_solver([[0 8 0], [0 0 1], [0 -2 2]], 'r');
 v = morse_modified(r, f1, 0.1 * Re, 0.75 * Re);
-
-% % Checking potential
-% figure(100);
-% plot(r,v);
-% hold on
-% plot(r, v_original, 'b-')
-% plot(r, v1, 'g-')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

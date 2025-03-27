@@ -20,7 +20,7 @@ morse2D = interp_data(L, n, R, scale_down, r, v, 0.);
 
 % Saving the files as a .mat in folder with onebodydistribution.m
 file_name = 'onebody_params';
-directory = 'One Body'; %Relative path (Could instead be absolute)
+directory = fullfile('..','One Body'); %Relative path (Could instead be absolute)
 onebody_params = struct('conv_p_2D', conv_p_2D, 'mod_morse2D', mod_morse2D, ...
                         'morse2D', morse2D); %'g_xy', g_xy);
 

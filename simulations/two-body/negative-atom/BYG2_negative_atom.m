@@ -10,6 +10,10 @@ projectRoot = fullfile(thisDir, '..', '..', '..');
 
 addpath(genpath(fullfile(projectRoot,'lib')));
 
+% Load params from config dir
+configDir = fullfile(projectRoot, 'config');
+sharedParams = load_params(fullfile(configDir, 'shared'));
+twobodyParams = load_params(fullefile(configDir, 'two_body'));
 
 %%% Parameter from two body evolution
 % Load in p0_12

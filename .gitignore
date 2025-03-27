@@ -15,4 +15,7 @@ output/
 *.log
 *.asv
 
-=============== MATLAB Project Metadata ===============
+# =============== MATLAB Project Metadata ===============
+
+# =============== Local Data ===============
+"local data/"
