@@ -5,6 +5,16 @@
 %%%%% Working off of onebodyparams.mat
 % Important as the 2d potential morse2D and p2_ref come from this.
 
+%%%%%%%%%%%%%%%%%%%%% Access the functions from the library
+thisFile = mfilename('fullpath');
+thisDir = fileparts(thisFile);
+
+% This file is 3 directories deep
+projectRoot = fullfile(thisDir, '..', '..', '..');
+
+addpath(genpath(fullfile(projectRoot,'lib')));
+
+
 % Loading.mat with intp2_ref (p0_12) and v2_12(Morse2D) functions
 load onebody_params.mat
 p0_12 = conv_p_2D;

@@ -1,8 +1,14 @@
 % This script finds the two-body distribution function for a uniform liquid
 % in two dimensions.
 
-% Adding polynomial stitching functions for the potential
-addpath("Functions")
+%%%%%%%%%%%%%%%%% Access the functions from the library
+thisFile = mfilename('fullpath');
+thisDir = fileparts(thisFile);
+
+% This file is 3 directories deep
+projectRoot = fullfile(thisDir, '..', '..', '..');
+
+addpath(genpath(fullfile(projectRoot,'lib')));
 
 %%% Overall parameters
 max_t = 1e-4;           % increment of time
@@ -181,8 +187,8 @@ for a = 0:max_steps
         xlabel('radial distance (Angstroms)', 'FontSize', 16);
         ylabel('p','FontSize',16);
         title(['Probability density (p) time Evolution', 'T = ', num2str(T), ' density = ', num2str(PdS_density)]);
-        filename1= fullfile('Figure 1', [ num2str(a/plotting_step), '.png']);
-        saveas(gcf,filename1);
+        % filename1= fullfile('Figure 1', [ num2str(a/plotting_step), '.png']);
+        % saveas(gcf,filename1);
 
         fig_num = 2;
         figure(fig_num), clf, hold on;
@@ -197,15 +203,15 @@ for a = 0:max_steps
         plot( r(1:lim), change(1:lim)); %/ two_body, 'k' );
         xlabel('radial distance (Angstroms)', 'FontSize', 16);
         ylabel('dp/dt','FontSize',16);
-        filename3 = fullfile('Figure 3',[ num2str(a/plotting_step), '.png']);
+        % filename3 = fullfile('Figure 3',[ num2str(a/plotting_step), '.png']);
         title('dp/dt time Evolution');
-        saveas(gcf,filename3);
+        % saveas(gcf,filename3);
 
         interp_p = interp_data( L, n, R, scale_down, r, p, PdS_density);
         interp_surf( L, interp_p, n, a, N, scale_down, savets);
 
-        filename4 = fullfile('Figure 4',[ num2str(a/plotting_step), '.png']);
-        saveas(gcf,filename4);
+        % filename4 = fullfile('Figure 4',[ num2str(a/plotting_step), '.png']);
+        % saveas(gcf,filename4);
 
         fig_num = 5;
         figure(fig_num);
@@ -213,8 +219,8 @@ for a = 0:max_steps
         xlabel('radial distance (Angstroms)', 'FontSize', 16);
         ylabel('p','FontSize',16);
         title(['ln(p)',  'T = ', num2str(T), ' density = ', num2str(PdS_density)]);
-        filename5= fullfile('Figure 5', [ num2str(a/plotting_step), '.png']);
-        saveas(gcf,filename5);
+        % filename5= fullfile('Figure 5', [ num2str(a/plotting_step), '.png']);
+        % saveas(gcf,filename5);
 
         % Plot change terms for debugging.
 

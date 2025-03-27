@@ -1,8 +1,15 @@
 % This script finds the two-body distribution function for a uniform liquid
 % in two dimensions.
 
-% Adding polynomial stitching functions for the potential
-addpath("Functions")
+%%%%%%%%%%%%%%%%%%%%% Access the functions from the library
+thisFile = mfilename('fullpath');
+thisDir = fileparts(thisFile);
+
+% This file is 3 directories deep
+projectRoot = fullfile(thisDir, '..', '..', '..');
+
+addpath(genpath(fullfile(projectRoot,'lib')));
+
 
 %%% Parameter from two body evolution
 % Load in p0_12
