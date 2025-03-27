@@ -1,0 +1,15 @@
+# =============== Visualization Files ===============
+*.png
+*.jpg
+
+# =============== Matlab Workspaces ===============
+#Ignore all of the .mat workspace files. If needed download or use cloud
+*.mat
+
+# Keep the params file, although it is regenerated on two-body evolution run
+!onebody_params.mat
+
+=============== Logs and Debug ===============
+#Ignore output and logs
+output/
+*.log
