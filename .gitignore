@@ -13,3 +13,5 @@
 #Ignore output and logs
 output/
 *.log
+*.asv
+
