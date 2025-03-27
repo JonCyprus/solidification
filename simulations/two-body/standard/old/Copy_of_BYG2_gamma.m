@@ -1,6 +1,11 @@
 % This script finds the two-body distribution function for a uniform liquid
 % in two dimensions.
 
+%========================= IMPORTANT========================
+% This mainly serves as a backup script for how we were doing things
+% previously before using Git VC. Not intended for running use.
+%===========================================================
+
 % Adding polynomial stitching functions for the potential
 addpath("Functions")
 
@@ -112,7 +117,7 @@ lr = lrange( r, 7 * Re, 8 * Re ); % Changed from 12 and 12.5 to 17 * Re and 19 *
 
 c1 = kbT * g_r;
 c2 = g_r .* lv + dg .* dv;
-c3 = g_r .* -dv + kbT * dg;
+c3 = g_r .* dv + kbT * dg;
 c4 = g_r / one_body^3  .* 2 .* pi;
 
 time = 0;
@@ -131,9 +136,9 @@ for a = 0:max_steps
     
     % Calculates change
     fst = c1 .* lp ;
-    snd = -c2 .* p;
+    snd = c2 .* p;
     trd = c3 .* dp; 
-    fourth = -c4 .* p .* (T0' * ( P0 .* j0 .* ( T0 * ( h .* rdr ) ) ) );
+    fourth = c4 .* p .* (T0' * ( P0 .* j0 .* ( T0 * ( h .* rdr ) ) ) );
     fifth = (g_r .* dp + dg .* p) .* (1/one_body^3) .* 2 .* pi;
     fifth = fifth .* ( T1' * ( P0 .* j0 .* ( T1 * ( dv .* p .* rdr ) ) ) );
     change = 2. * G .* (fst + snd + trd + fourth + fifth); 

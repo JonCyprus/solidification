@@ -1,6 +1,12 @@
 % This script finds the two-body distribution function for a uniform liquid
 % in two dimensions.
 
+%========================= IMPORTANT========================
+% This mainly serves as a backup script for how we were doing things
+% previously before using Git VC. This one does NOT use the dynamic
+% slowdown method
+%===========================================================
+
 % Adding polynomial stitching functions for the potential
 addpath("Functions")
 
