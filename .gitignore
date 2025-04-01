@@ -19,3 +19,6 @@ output/
 
 # =============== Local Data ===============
 "local data/"
+.idea/
+*.iml
+go-tools/.env
