@@ -11,7 +11,7 @@ function [] = Plot3D(fignum, step, n, KbT, N, x2, y2, p1)
         axis tight
 
         filename1= fullfile('One_body Figures', ['onebody_', num2str(step), '.png']);
-        saveas(gcf, filename1)
+        % saveas(gcf, filename1)
 
 end
 
