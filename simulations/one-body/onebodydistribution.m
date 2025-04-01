@@ -9,15 +9,17 @@
 thisFile = mfilename('fullpath');
 thisDir = fileparts(thisFile);
 
-% This file is 3 directories deep
-projectRoot = fullfile(thisDir, '..', '..', '..');
+% This file is 2 directories deep
+projectRoot = fullfile(thisDir, '..', '..');
 
 addpath(genpath(fullfile(projectRoot,'lib')));
 
 % Load params from config dir
 configDir = fullfile(projectRoot, 'config');
-sharedParams = load_params(fullfile(configDir, 'shared'));
-onebodyParams = load_params(fullefile(configDir, 'one_body'));
+disp(fullfile(configDir, 'shared', 'shared_params.json'));
+
+sharedParams = load_params(fullfile(configDir, 'shared', 'shared_params.json'));
+onebodyParams = load_params(fullfile(configDir, 'one_body', 'one_body_params.json'));
 
 % Loading.mat with intp2_ref (p0_12) and v2_12(Morse2D) functions
 load onebody_params.mat
@@ -25,14 +27,16 @@ p0_12 = conv_p_2D;
 v2_12 = mod_morse2D; 
 
 % General Parameters
+kb = sharedParams.boltzmann;     % Boltzmann constant eV/K
+T = sharedParams.temperature;    % temperature (K), regulates diffusion term, changes
+G = sharedParams.mobility;       % Overall Mobility Constant
+
 max_ts = 1e-3;          % Time increment
 dt = 1e-4;
 Re = 2.866;             % Lattice parameter from LAMMPS in Angstroms
-kb = 8.61733262e-5;     % Boltzmann constant eV/K
-T = 500;               % temperature (K), regulates diffusion term, changes
 kbT = kb * T;           % kb * T;  % Product of kb and T; kbT = 0.1215 eV at 1410K (From MD)
 beta = 1/kbT;
-G = 1.;                 % Overall Mobility Constant
+           
 small = 1.e-8;
 really_small = 1.e-16;
 
@@ -46,7 +50,7 @@ one_body = N/(L^2);         % This is 0.1362 N/Angstrom^2 (One body density)
 
 % Plotting parameters
 total_step = 40000000;  % total number of steps
-plotting_step = 100;     % Incremental step for plotting
+plotting_step = 1000;     % Incremental step for plotting
 
 % Initialization of x2 and y2 matrices
 x2 = linspace(-L/2,L/2,n+1)'* ones(1,n+1);
@@ -192,7 +196,7 @@ for s = start:total_step %changed start to 1000
         %Plot3D(3, s, n , kbT, N, x2, y2, second);
         figure(1);
         filename1= fullfile('y', [ num2str(a/plotting_step), '.png']);
-        saveas(gcf,filename1);
+        % saveas(gcf,filename1);
     end
     if s == 1
         grad_p1_x = gpuArray(grad_p1_x);

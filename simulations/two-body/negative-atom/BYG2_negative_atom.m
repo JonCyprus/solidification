@@ -22,10 +22,10 @@ p0_12 = data.p0_12_700; %load in the data at 1200k
 
 %%% Overall parameters
 max_t = 1e-6;           % increment of time
-kb = 8.61733262e-5;     %Boltzmann constant eV/K
-T = 1200;               % temperature (K), regulates diffusion term, changes
+kb = sharedParams.boltzmann;     %Boltzmann constant eV/K
+T = sharedParams.temperature;               % temperature (K), regulates diffusion term, changes
 kbT = kb * T;           %kb .* T;  % Product of kb and T; kbT = 0.1215 eV at 1410K (From MD)
-G = 1.;                 % overall mobility constant
+G = sharedParams.mobility;                 % overall mobility constant
 red = 16;               % factor that reduces the set of frequencies was 16
 
 %%% Morse Potential Paramaters:
@@ -47,8 +47,14 @@ scale_down = 2 .^ (3);  % Grid-scale down factor for fig4 (interp_p and surface)
 savets = 20000;       % Time step multiple that files are saved
 
 %%% Quantities for the normalization of the distribution functions
-one_body = N / L^2;     % This is 0.1362 N/Angstrom^2
-two_body = N * ( N - 1 ) / L^4;
+A_circ = pi * R^2;
+N_circ = 0.1362 * A_circ;
+S_density = N_circ / A_circ;     % This is 0.1362 N/Angstrom^2
+P_density = N_circ * (N_circ - 1) / A_circ^2; % is this really L^4 since we are doing radial distance?
+PdS_density = (N_circ - 1) / A_circ;
+
+%one_body = N / L^2;     % This is 0.1362 N/Angstrom^2
+%two_body = N * ( N - 1 ) / L^4;
 %p0_12(:) = two_body;
 
 
@@ -65,7 +71,7 @@ z = bessel_root( 1, n )';
 k = z( 2:n/red ) / R;
 r = R / z(n) * z;
 rdr = integrate( r );
-total_mass = 2 * pi * two_body * sum(rdr);
+total_mass = N_circ - 1; %negative atom so should just be N_circ?
 
 %%% For scaling the magnitude of changes
 %epsilon = 1e-1;
@@ -73,7 +79,7 @@ total_mass = 2 * pi * two_body * sum(rdr);
 
 % Vector for smooth boundary condition
 smoothing = bound_smooth(r, Re * 100, Re * 101);
-far_mass = 2 * pi * two_body * sum((1-smoothing) .* rdr);
+far_mass = 2 * pi * PdS_density * sum((1-smoothing) .* rdr);
 near_mass = total_mass - far_mass;
 
 %%% Transformation matrices
@@ -101,7 +107,7 @@ v = v_original;
 %v = cont_pot(v, r, Re);
 %v = cont_linear(v, 0.75*Re, D, alpha, Re, r);
 %v = cont_exp(v,10,0.71 * Re, D, alpha, Re, Rc, r);
-v = cont_parabola(v, 0.75 * Re, D, alpha, Re, r);
+%v = cont_parabola(v, 0.75 * Re, D, alpha, Re, r);
 
 %%% Creates the modified potential with the polynomial of given conditions
 f1 = poly_solver([[0 8 0], [0 0 1], [0 -2 2]], 'r');
@@ -111,7 +117,7 @@ v = morse_modified(r, f1, 0.1 * Re, 0.75 * Re);
 [ dv, lv ] = taylor( v, r );
 
 %%% Initial two-body distribution function
-p = ones( n, 1 ) * one_body;
+p = ones( n, 1 ) * S_density;
 %p = p0_12;
 
 % Old condition w/ peak
@@ -172,7 +178,7 @@ saveas(gcf,filename1);
 
 
 time = 0;
-for a = 400000:300000000
+for a = 0:300000000
     %%% Calculation of quantities regarding p for change
         % CHECK WHETHER THIS HELPS
         %p = lr .* ( p - two_body) + two_body %%breaks code and gives NaN
@@ -192,7 +198,7 @@ for a = 400000:300000000
     snd = -h__star;
     trd = p .* (T0' * (bf0_p .* bf0_h - bf0_p0_12 .* bf0_h__star));
     fth = dp .* (T1' * (bf0_p .* bf1_dv_p0_12 - bf0_p0_12 .* bf1_dv_p));
-    change = 2. * G * (fst + snd + ((pi / one_body^3) .* (trd + fth)) );
+    change = 2. * G * (fst + snd + ((pi / S_density^1) .* (trd + fth)) );
     %change = change .* scaling;
     
     % Enforces positivity
@@ -204,7 +210,7 @@ for a = 400000:300000000
     p = p + dt * change;
     %current_near_mass = 2 * pi * sum((p .* smoothing) .* rdr);
     %p = (p .* smoothing) * (near_mass/current_near_mass) + two_body * (1. - smoothing);
-    p = (p .* smoothing) + two_body * (1. - smoothing);
+    p = (p .* smoothing) + P_density * (1. - smoothing);
     lim = n;
     
     % Saving every savets timestep
@@ -213,9 +219,6 @@ for a = 400000:300000000
         %save(filename);
     end
 
-    %%%% IRREGULAR PATTERN IN BF0_P0_12 .* BF0_H__STAR BUT THE COMPENENTS
-    %%%% LOOK FINE --> p0_12 has a lot of oscillations on the logarithmic
-    %%%% plot
     % Visualization
     if mod( a, 1000 ) == 0
         disp(['Total Mass: ', num2str(2 * pi * sum(p .* rdr))]);
