@@ -3,7 +3,7 @@
 *.jpg
 
 # =============== Matlab Workspaces ===============
-#Ignore all of the .mat workspace files. If needed download or use cloud
+#Ignore all of the .mat workspace files. If needed download or use config_cloud
 *.mat
 
 # Keep the params file, although it is regenerated on two-body evolution run

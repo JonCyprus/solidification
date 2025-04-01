@@ -1,51 +1,46 @@
 package main
 
 import (
+	"bufio"
 	"context"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/jackc/pgx/v5"
-	"github.com/joho/godotenv"
-	"log"
+	"fmt"
 	"os"
+	cloudcfg "solidification/config_cloud"
+	"solidification/handlers"
+	"strings"
 )
 
-type cloudConfig struct {
-	s3AccessKey    string
-	s3SecretAccess string
-	s3Bucket       string
-	s3Region       string
-	db             *pgx.Conn
-	s3Client       *s3.Client
-}
-
 func main() {
-	// Load .env
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	// Initialize config_cloud connections
+	cfg := cloudcfg.InitializeCloudConfig()
+	defer cfg.GetDB().Close(context.Background())
+
+	// Start the REPL
+	fmt.Println("Simulation file uploader REPL ready. Type 'help' or 'exit'.")
+
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		fmt.Print("> ")
+		if !scanner.Scan() {
+			fmt.Println("Error scanning input. Exiting.")
+			break
+		}
+
+		// Get the command and the arguments
+		input := strings.Fields(scanner.Text())
+		cmd := strings.ToLower(input[0])
+		var args []string
+		if len(input) > 1 {
+			args = input[1:]
+		} else {
+			args = []string{}
+		}
+
+		// Invoke the cmd from the input
+		err := handlers.InvokeCommand(cmd, args, cfg)
+		if err != nil {
+			fmt.Println(err)
+		}
+
 	}
-
-	// Set up the s3 Client
-	awsConfig, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(os.Getenv("S3_REGION")))
-	if err != nil {
-		log.Fatal("error initializing AWS config", err)
-	}
-	awsClient := s3.NewFromConfig(awsConfig)
-
-	// Set up the database connection
-	dbURL := os.Getenv("DB_URL")
-	if dbURL == "" {
-		log.Fatal("DB_URL environment variable not set")
-	}
-	db, err := pgx.Connect(context.Background(), dbURL)
-	if err != nil {
-		log.Fatalf("error connecting to the database: %v\n", err)
-	}
-	defer db.Close(context.Background())
-
-	// Set up the struct
-	cloudConfig :=
-
-
 }
