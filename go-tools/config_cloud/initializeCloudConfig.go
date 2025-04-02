@@ -2,6 +2,7 @@ package config_cloud
 
 import (
 	"context"
+	"fmt"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/jackc/pgx/v5"
@@ -24,11 +25,17 @@ func InitializeCloudConfig() *CloudConfig {
 	}
 	awsClient := s3.NewFromConfig(awsConfig)
 
-	// Set up the database connection
+	// Set up the sql connection and correct to the right schema
 	dbURL := mustGetenv("DB_URL")
 	db, err := pgx.Connect(context.Background(), dbURL)
 	if err != nil {
-		log.Fatalf("error connecting to the database: %v\n", err)
+		log.Fatalf("error connecting to the sql: %v\n", err)
+	}
+
+	dbSchema := mustGetenv("SIMULATION_SCHEMA")
+	_, err = db.Exec(context.Background(), fmt.Sprintf(`SET search_path TO "%s"`, dbSchema))
+	if err != nil {
+		log.Fatalf("error setting search_path to %s: %v\n", dbSchema, err)
 	}
 
 	// Load in other .env
