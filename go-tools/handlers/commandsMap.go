@@ -17,4 +17,15 @@ func init() {
 		callback:    handlerExit,
 	}
 
+	Commands["start-run"] = CLICommand{
+		name:        "start-run",
+		description: "Initializes cfg with UUID for cloud services",
+		callback:    handlerStartRun,
+	}
+
+	Commands["upload"] = CLICommand{
+		name:        "upload",
+		description: "Uploads a file to neon-postgres and s3 bucket",
+		callback:    handlerUpload,
+	}
 }
