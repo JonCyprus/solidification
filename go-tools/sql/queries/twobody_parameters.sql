@@ -1,5 +1,5 @@
 -- name: CreateTwoBodyRun :one
-INSERT INTO twobody_parameters (temperature, density, version, runID, note, created_at, updated_at)
+INSERT INTO twobody_parameters (temperature, density, version, run_id, note, created_at, updated_at)
 VALUES(
        $1,
        $2,
@@ -12,7 +12,7 @@ VALUES(
 
 -- name: RemoveRunByID :one
 DELETE FROM twobody_parameters
-WHERE runID = $1
+WHERE run_id = $1
 RETURNING *;
 
 -- name: WipeTwoBodyTable :exec
