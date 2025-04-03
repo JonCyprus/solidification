@@ -25,7 +25,7 @@ func InitializeCloudConfig() *CloudConfig {
 	}
 	awsClient := s3.NewFromConfig(awsConfig)
 
-	// Set up the sql connection and correct to the right schema
+	// Set up the sql connection and correct to the right schema, USES SQLC
 	dbURL := mustGetenv("DB_URL")
 	db, err := pgx.Connect(context.Background(), dbURL)
 	if err != nil {

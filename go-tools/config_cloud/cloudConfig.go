@@ -4,6 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"solidification/internal/database"
 )
 
 // CloudConfig struct type for holding db connections and s3 relevant info
@@ -17,13 +18,13 @@ type CloudConfig struct {
 	runDensity     float64
 	runVersion     string
 	runID          uuid.UUID
-	db             *pgx.Conn
+	db             *database.Queries
 	s3Client       *s3.Client
 }
 
 // Selectors
 
-func (cfg *CloudConfig) GetDB() *pgx.Conn {
+func (cfg *CloudConfig) GetDB() *database.Queries {
 	return cfg.db
 }
 
@@ -66,4 +67,11 @@ func (cfg *CloudConfig) SetRunDensity(density float64) {
 
 func (cfg *CloudConfig) SetRunVersion(version string) {
 	cfg.runVersion = version
+}
+
+// SetDB This is really a query wrapper not the webscoket itself
+func (cfg *CloudConfig) SetDB(db *pgx.Conn) {
+	queries := database.New(db)
+	cfg.db = queries
+	return
 }
