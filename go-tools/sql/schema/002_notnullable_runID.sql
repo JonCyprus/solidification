@@ -1,4 +1,4 @@
 
 ALTER TABLE twobody_parameters
-    ALTER COLUMN runID
+    ALTER COLUMN "runID"
         SET NOT NULL;
