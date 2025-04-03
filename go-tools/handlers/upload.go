@@ -21,9 +21,10 @@ func handlerUpload(cfg *cloudcfg.CloudConfig, args []string) error {
 	if !validExts[ext] {
 		return fmt.Errorf("unsupported file extension: %s", ext)
 	}
-	filename := args[1]
+	//filename := args[1]
 
 	// Update the sql record
+	return nil
 
 }
 
