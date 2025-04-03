@@ -54,7 +54,7 @@ func TestCreateTwoBodyRow(t *testing.T) {
 	defer cleanup()
 
 	// Current time and test parameters
-	currentTime := time.Now()
+	currentTime := time.Now().UTC()
 
 	temp := 1200.00
 	density := 0.1364
@@ -99,6 +99,7 @@ func TestCreateTwoBodyRow(t *testing.T) {
 	}
 
 	// Convert the timezones to be the same
+
 	expected.CreatedAt = expected.CreatedAt.UTC()
 	expected.UpdatedAt = expected.UpdatedAt.UTC()
 	results.CreatedAt = results.CreatedAt.UTC()
