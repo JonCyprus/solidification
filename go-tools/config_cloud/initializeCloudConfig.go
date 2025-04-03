@@ -25,7 +25,7 @@ func InitializeCloudConfig() *CloudConfig {
 	}
 	awsClient := s3.NewFromConfig(awsConfig)
 
-	// Set up the sql connection and correct to the right schema, USES SQLC
+	// Set up the sql connection and correct to the right schema
 	dbURL := mustGetenv("DB_URL")
 	db, err := pgx.Connect(context.Background(), dbURL)
 	if err != nil {
@@ -51,10 +51,12 @@ func InitializeCloudConfig() *CloudConfig {
 		s3SecretAccess: s3SecretAccess,
 		s3Bucket:       s3Bucket,
 		s3Region:       s3Region,
-		db:             db,
 		s3Client:       awsClient,
 		dataFilepath:   dataFilepath,
 	}
+
+	// Set the Queries part of the struct (using SQLC)
+	cfg.SetDB(db)
 
 	return &cfg
 }
