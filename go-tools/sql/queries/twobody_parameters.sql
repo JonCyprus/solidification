@@ -17,3 +17,10 @@ RETURNING *;
 
 -- name: WipeTwoBodyTable :exec
 DELETE FROM twobody_parameters;
+
+-- name: ListAllTwoBodyParams :many
+SELECT * FROM twobody_parameters;
+
+-- name: SelectTwoBodyParamByRunID :one
+SELECT * FROM twobody_parameters
+WHERE run_id = $1;

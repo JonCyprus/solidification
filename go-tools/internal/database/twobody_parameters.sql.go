@@ -59,6 +59,41 @@ func (q *Queries) CreateTwoBodyRun(ctx context.Context, arg CreateTwoBodyRunPara
 	return i, err
 }
 
+const listAllTwoBodyParams = `-- name: ListAllTwoBodyParams :many
+SELECT temperature, density, version, run_id, note, created_at, updated_at FROM twobody_parameters
+`
+
+func (q *Queries) ListAllTwoBodyParams(ctx context.Context) ([]TwobodyParameter, error) {
+	rows, err := q.db.QueryContext(ctx, listAllTwoBodyParams)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TwobodyParameter
+	for rows.Next() {
+		var i TwobodyParameter
+		if err := rows.Scan(
+			&i.Temperature,
+			&i.Density,
+			&i.Version,
+			&i.RunID,
+			&i.Note,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const removeRunByID = `-- name: RemoveRunByID :one
 DELETE FROM twobody_parameters
 WHERE run_id = $1
@@ -67,6 +102,26 @@ RETURNING temperature, density, version, run_id, note, created_at, updated_at
 
 func (q *Queries) RemoveRunByID(ctx context.Context, runID uuid.UUID) (TwobodyParameter, error) {
 	row := q.db.QueryRowContext(ctx, removeRunByID, runID)
+	var i TwobodyParameter
+	err := row.Scan(
+		&i.Temperature,
+		&i.Density,
+		&i.Version,
+		&i.RunID,
+		&i.Note,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const selectTwoBodyParamByRunID = `-- name: SelectTwoBodyParamByRunID :one
+SELECT temperature, density, version, run_id, note, created_at, updated_at FROM twobody_parameters
+WHERE run_id = $1
+`
+
+func (q *Queries) SelectTwoBodyParamByRunID(ctx context.Context, runID uuid.UUID) (TwobodyParameter, error) {
+	row := q.db.QueryRowContext(ctx, selectTwoBodyParamByRunID, runID)
 	var i TwobodyParameter
 	err := row.Scan(
 		&i.Temperature,
