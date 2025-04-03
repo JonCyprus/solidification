@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -14,7 +13,8 @@ import (
 func main() {
 	// Initialize config_cloud connections
 	cfg := cloudcfg.InitializeCloudConfig()
-	defer cfg.GetDB().Close(context.Background())
+	defer cfg.GetDB().Close()
+
 	err := handlers.InvokeCommand("start-run", []string{}, cfg)
 	if err != nil {
 		log.Fatalf("error initializing unique runID: %v", err.Error())

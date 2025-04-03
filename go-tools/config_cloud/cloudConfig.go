@@ -1,9 +1,9 @@
 package config_cloud
 
 import (
+	"database/sql"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"solidification/internal/database"
 )
 
@@ -18,13 +18,15 @@ type CloudConfig struct {
 	runDensity     float64
 	runVersion     string
 	runID          uuid.UUID
-	db             *database.Queries
+	db             *sql.DB
+	dbQueries      *database.Queries
 	s3Client       *s3.Client
 }
 
 // Selectors
+func (cfg *CloudConfig) GetDBQueries() *database.Queries { return cfg.dbQueries }
 
-func (cfg *CloudConfig) GetDB() *database.Queries {
+func (cfg *CloudConfig) GetDB() *sql.DB {
 	return cfg.db
 }
 
@@ -69,9 +71,9 @@ func (cfg *CloudConfig) SetRunVersion(version string) {
 	cfg.runVersion = version
 }
 
-// SetDB This is really a query wrapper not the webscoket itself
-func (cfg *CloudConfig) SetDB(db *pgx.Conn) {
+// SetDBQueries This is really a query wrapper not the webscoket itself
+func (cfg *CloudConfig) SetDBQueries(db *sql.DB) {
 	queries := database.New(db)
-	cfg.db = queries
+	cfg.dbQueries = queries
 	return
 }

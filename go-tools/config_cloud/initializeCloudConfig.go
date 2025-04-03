@@ -2,11 +2,12 @@ package config_cloud
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"log"
 	"os"
 )
@@ -27,13 +28,13 @@ func InitializeCloudConfig() *CloudConfig {
 
 	// Set up the sql connection and correct to the right schema
 	dbURL := mustGetenv("DB_URL")
-	db, err := pgx.Connect(context.Background(), dbURL)
+	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("error connecting to the sql: %v\n", err)
 	}
 
 	dbSchema := mustGetenv("SIMULATION_SCHEMA")
-	_, err = db.Exec(context.Background(), fmt.Sprintf(`SET search_path TO "%s"`, dbSchema))
+	_, err = db.ExecContext(context.Background(), fmt.Sprintf(`SET search_path TO "%s"`, dbSchema))
 	if err != nil {
 		log.Fatalf("error setting search_path to %s: %v\n", dbSchema, err)
 	}
@@ -52,11 +53,12 @@ func InitializeCloudConfig() *CloudConfig {
 		s3Bucket:       s3Bucket,
 		s3Region:       s3Region,
 		s3Client:       awsClient,
+		db:             db,
 		dataFilepath:   dataFilepath,
 	}
 
 	// Set the Queries part of the struct (using SQLC)
-	cfg.SetDB(db)
+	cfg.SetDBQueries(db)
 
 	return &cfg
 }
