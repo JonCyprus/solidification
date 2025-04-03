@@ -7,12 +7,14 @@ package database
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createTwoBodyRun = `-- name: CreateTwoBodyRun :one
-INSERT INTO twobody_parameters (temperature, density, version, runID, note, created_at, updated_at)
+INSERT INTO twobody_parameters (temperature, density, version, run_id, note, created_at, updated_at)
 VALUES(
        $1,
        $2,
@@ -21,25 +23,25 @@ VALUES(
        $5,
        $6,
        $7
-      ) RETURNING temperature, density, version, runid, note, created_at, updated_at
+      ) RETURNING temperature, density, version, run_id, note, created_at, updated_at
 `
 
 type CreateTwoBodyRunParams struct {
 	Temperature float64
 	Density     float64
 	Version     string
-	Runid       pgtype.UUID
-	Note        pgtype.Text
-	CreatedAt   pgtype.Timestamp
-	UpdatedAt   pgtype.Timestamp
+	RunID       uuid.UUID
+	Note        sql.NullString
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 func (q *Queries) CreateTwoBodyRun(ctx context.Context, arg CreateTwoBodyRunParams) (TwobodyParameter, error) {
-	row := q.db.QueryRow(ctx, createTwoBodyRun,
+	row := q.db.QueryRowContext(ctx, createTwoBodyRun,
 		arg.Temperature,
 		arg.Density,
 		arg.Version,
-		arg.Runid,
+		arg.RunID,
 		arg.Note,
 		arg.CreatedAt,
 		arg.UpdatedAt,
@@ -49,7 +51,7 @@ func (q *Queries) CreateTwoBodyRun(ctx context.Context, arg CreateTwoBodyRunPara
 		&i.Temperature,
 		&i.Density,
 		&i.Version,
-		&i.Runid,
+		&i.RunID,
 		&i.Note,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -59,18 +61,18 @@ func (q *Queries) CreateTwoBodyRun(ctx context.Context, arg CreateTwoBodyRunPara
 
 const removeRunByID = `-- name: RemoveRunByID :one
 DELETE FROM twobody_parameters
-WHERE runID = $1
-RETURNING temperature, density, version, runid, note, created_at, updated_at
+WHERE run_id = $1
+RETURNING temperature, density, version, run_id, note, created_at, updated_at
 `
 
-func (q *Queries) RemoveRunByID(ctx context.Context, runid pgtype.UUID) (TwobodyParameter, error) {
-	row := q.db.QueryRow(ctx, removeRunByID, runid)
+func (q *Queries) RemoveRunByID(ctx context.Context, runID uuid.UUID) (TwobodyParameter, error) {
+	row := q.db.QueryRowContext(ctx, removeRunByID, runID)
 	var i TwobodyParameter
 	err := row.Scan(
 		&i.Temperature,
 		&i.Density,
 		&i.Version,
-		&i.Runid,
+		&i.RunID,
 		&i.Note,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -83,6 +85,6 @@ DELETE FROM twobody_parameters
 `
 
 func (q *Queries) WipeTwoBodyTable(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, wipeTwoBodyTable)
+	_, err := q.db.ExecContext(ctx, wipeTwoBodyTable)
 	return err
 }

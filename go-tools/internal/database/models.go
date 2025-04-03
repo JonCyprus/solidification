@@ -5,24 +5,27 @@
 package database
 
 import (
-	"github.com/jackc/pgx/v5/pgtype"
+	"database/sql"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type TwobodyFilepath struct {
-	Runid     pgtype.UUID
+	RunID     uuid.UUID
 	Category  string
 	Timestep  int64
 	Filename  string
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type TwobodyParameter struct {
 	Temperature float64
 	Density     float64
 	Version     string
-	Runid       pgtype.UUID
-	Note        pgtype.Text
-	CreatedAt   pgtype.Timestamp
-	UpdatedAt   pgtype.Timestamp
+	RunID       uuid.UUID
+	Note        sql.NullString
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
