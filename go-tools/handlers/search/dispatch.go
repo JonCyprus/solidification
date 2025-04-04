@@ -16,6 +16,7 @@ type searchingSubCommand struct {
 }
 
 // Selectors and way to invoke callback
+
 func (cmd *searchingSubCommand) Name() string {
 	return cmd.name
 }
@@ -37,7 +38,7 @@ func InvokeSearchCommand(txtCmd string, args []string, config *cloudcfg.CloudCon
 	// Get the cmd from the command map
 	cmd, ok := searchingCommands[txtCmd]
 	if !ok {
-		return fmt.Errorf("unknown search command '%s'", txtCmd)
+		return fmt.Errorf("unknown search command '%s'; try 'search help'", txtCmd)
 	}
 
 	// Invoke the command
@@ -53,7 +54,7 @@ func init() {
 	searchingCommands["help"] = searchingSubCommand{
 		name:        "help",
 		usage:       "search help",
-		description: "prints out all search commands",
+		description: "prints out all search commands; specify the simulation type for data retrieval as first argument after command",
 		callback:    searchHelp,
 	}
 
