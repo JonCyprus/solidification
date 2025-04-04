@@ -26,8 +26,11 @@ func main() {
 
 	// Inject run info into SQL database still bandaid
 	err = handlers.InvokeCommand("start-run", []string{"two-body"}, cfg)
-	if err != nil {
+	/*if err != nil {
 		log.Fatalf("error starting new run: %v", err.Error())
+	}*/
+	if err != nil {
+		fmt.Printf("error starting run: %v", err.Error())
 	}
 
 	// Start the REPL

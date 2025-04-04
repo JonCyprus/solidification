@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"log"
 	cloudcfg "solidification/config_cloud"
 	"solidification/internal/database"
 	"time"
@@ -41,7 +40,8 @@ func handlerStartRun(cfg *cloudcfg.CloudConfig, args []string) error {
 				UpdatedAt:   current,
 			})
 		if err != nil {
-			log.Fatal("Unable to create two body run: ", err)
+			return err
+			//log.Fatal("Unable to create two body run: ", err)
 		} else {
 			fmt.Println("Created two body run: ", cfg.GetRunID())
 		}
