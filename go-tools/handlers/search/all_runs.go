@@ -34,7 +34,7 @@ func handleListAllTwoBodyRuns(cfg *cloudcfg.CloudConfig) error {
 
 	for _, row := range results {
 		fmt.Printf("\nTemp: %.2f, Density: %.4f, Version: %s | RunID: %s | Note: %s\n",
-			row.Temperature, row.Density, row.Version, row.RunID, row.Note)
+			row.Temperature, row.Density, row.Version, row.RunID, row.Note.String)
 		//fmt.Println("---------------------------------------------------------------------------------------------")
 		for _ = range 150 {
 			fmt.Print("-")
