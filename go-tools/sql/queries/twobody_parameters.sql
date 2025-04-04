@@ -25,4 +25,5 @@ SELECT * FROM twobody_parameters;
 SELECT * FROM twobody_parameters
 WHERE run_id = $1;
 
---
+-- name: ListAllTwoBodyRuns :many
+SELECT temperature, density, version, run_id, note FROM twobody_parameters;

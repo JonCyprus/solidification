@@ -94,6 +94,47 @@ func (q *Queries) ListAllTwoBodyParams(ctx context.Context) ([]TwobodyParameter,
 	return items, nil
 }
 
+const listAllTwoBodyRuns = `-- name: ListAllTwoBodyRuns :many
+SELECT temperature, density, version, run_id, note FROM twobody_parameters
+`
+
+type ListAllTwoBodyRunsRow struct {
+	Temperature float64
+	Density     float64
+	Version     string
+	RunID       uuid.UUID
+	Note        sql.NullString
+}
+
+func (q *Queries) ListAllTwoBodyRuns(ctx context.Context) ([]ListAllTwoBodyRunsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listAllTwoBodyRuns)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListAllTwoBodyRunsRow
+	for rows.Next() {
+		var i ListAllTwoBodyRunsRow
+		if err := rows.Scan(
+			&i.Temperature,
+			&i.Density,
+			&i.Version,
+			&i.RunID,
+			&i.Note,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const removeRunByID = `-- name: RemoveRunByID :one
 DELETE FROM twobody_parameters
 WHERE run_id = $1
