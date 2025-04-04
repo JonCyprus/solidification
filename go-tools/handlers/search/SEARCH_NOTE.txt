@@ -1,0 +1,2 @@
+This directory simply holds all the files needed for the search function in the REPL. There is a dispatch and all of
+the appropriate handlers.

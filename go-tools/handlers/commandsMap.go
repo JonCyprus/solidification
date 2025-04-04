@@ -34,4 +34,10 @@ func init() {
 		description: "Resets all files from neon-postgres and s3utils bucket",
 		callback:    handlerFullDataReset,
 	}
+
+	Commands["search"] = CLICommand{
+		name:        "search",
+		description: "searches files from database using specific arguments",
+		callback:    handlerSearch,
+	}
 }
