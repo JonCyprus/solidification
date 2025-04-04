@@ -16,7 +16,7 @@ import (
 func handlerStartRun(cfg *cloudcfg.CloudConfig, args []string) error {
 	// Check for proper arguments
 	if len(args) < 1 || args[0] != "one-body" && args[0] != "two-body" {
-		return errors.New("usage: upload <one-body OR two-body> <filename.ext>")
+		return errors.New("usage: start-run <one-body OR two-body> <version>")
 	}
 
 	// SetRunID
