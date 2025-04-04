@@ -50,6 +50,18 @@ func (cfg *CloudConfig) GetDataFilepath() string {
 	return cfg.dataFilepath
 }
 
+func (cfg *CloudConfig) GetRunTemperature() float64 {
+	return cfg.runTemperature
+}
+
+func (cfg *CloudConfig) GetRunDensity() float64 {
+	return cfg.runDensity
+}
+
+func (cfg *CloudConfig) GetRunVersion() string {
+	return cfg.runVersion
+}
+
 // Constructors
 
 func (cfg *CloudConfig) SetRunID(runID uuid.UUID) {
@@ -71,7 +83,7 @@ func (cfg *CloudConfig) SetRunVersion(version string) {
 	cfg.runVersion = version
 }
 
-// SetDBQueries This is really a query wrapper not the webscoket itself
+// SetDBQueries This is really a query wrapper not the websocket connection itself
 func (cfg *CloudConfig) SetDBQueries(db *sql.DB) {
 	queries := database.New(db)
 	cfg.dbQueries = queries
