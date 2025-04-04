@@ -48,7 +48,7 @@ func handlerStartRun(cfg *cloudcfg.CloudConfig, args []string) error {
 		return nil
 	case "two-body":
 		current := time.Now().UTC()
-		_, err := queries.CreateTwoBodyRun(context.Background(),
+		res, err := queries.CreateTwoBodyRun(context.Background(),
 			database.CreateTwoBodyRunParams{
 				Temperature: cfg.GetRunTemperature(),
 				Density:     cfg.GetRunDensity(),
@@ -62,7 +62,9 @@ func handlerStartRun(cfg *cloudcfg.CloudConfig, args []string) error {
 			return err
 			//log.Fatal("Unable to create two body run: ", err)
 		} else {
-			fmt.Println("Created two body run: ", cfg.GetRunID())
+			fmt.Println("Created two body run:")
+			fmt.Printf("Temperature: %f Density: %f Version: %s | RunID: %s | Note: %s\n",
+				res.Temperature, res.Density, res.Version, res.RunID.String(), res.Note.String)
 		}
 	}
 
