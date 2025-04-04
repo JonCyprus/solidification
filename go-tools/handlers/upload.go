@@ -51,7 +51,7 @@ func handlerUpload(cfg *cloudcfg.CloudConfig, args []string) error {
 	defer uploadFile.Close()
 
 	// Upload the file to s3 bucket
-	fullKey := cfg.GetRunID().String() + "/" + fmt.Sprintf("%v_", timeStep) + filename // full filepath on the s3utils bucket
+	fullKey := cfg.GetRunID().String() + "/" + category + "/" + fmt.Sprintf("%v_", timeStep) + filename // full filepath on the s3 bucket
 	_, err = cfg.GetS3Client().PutObject(context.Background(), &s3.PutObjectInput{
 		Bucket:      aws.String(cfg.GetS3Bucket()),
 		Key:         aws.String(fullKey),
