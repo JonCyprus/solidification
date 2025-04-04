@@ -13,7 +13,7 @@ func init() {
 
 	Commands["exit"] = CLICommand{
 		name:        "exit",
-		description: "Exits all commands",
+		description: "Exits file uploader",
 		callback:    handlerExit,
 	}
 
@@ -25,7 +25,13 @@ func init() {
 
 	Commands["upload"] = CLICommand{
 		name:        "upload",
-		description: "Uploads a file to neon-postgres and s3 bucket",
+		description: "Uploads a file to neon-postgres and s3utils bucket",
 		callback:    handlerUpload,
+	}
+
+	Commands["dev-full-reset"] = CLICommand{
+		name:        "dev-full-reset",
+		description: "Resets all files from neon-postgres and s3utils bucket",
+		callback:    handlerFullDataReset,
 	}
 }
