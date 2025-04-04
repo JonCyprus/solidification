@@ -30,7 +30,7 @@ func handlerFullDataReset(cfg *cloudcfg.CloudConfig, args []string) error {
 	}
 	fmt.Println("twobody_params table wiped")
 
-	err = cfg.GetDBQueries().WipeTwoBodyFiles(context.Background())
+	err = cfg.GetDBQueries().WipeTwoBodyFiles(context.Background()) // Technically unnecessary due to CASCADE DELETE
 	if err != nil {
 		return errors.New("failed to reset twobody_filepaths" + err.Error())
 	}
