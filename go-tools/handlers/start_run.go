@@ -14,14 +14,15 @@ import (
 )
 
 func handlerStartRun(cfg *cloudcfg.CloudConfig, args []string) error {
-	newID := uuid.New()
-	cfg.SetRunID(newID)
-	fmt.Println("New run ID set: ", newID.String())
-
 	// Check for proper arguments
 	if len(args) < 1 || args[0] != "one-body" && args[0] != "two-body" {
 		return errors.New("usage: upload <one-body OR two-body> <filename.ext>")
 	}
+
+	// SetRunID
+	newID := uuid.New()
+	cfg.SetRunID(newID)
+	fmt.Println("New run ID set: ", newID.String())
 
 	// Get the version of simulation
 	var version string
