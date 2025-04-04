@@ -70,7 +70,7 @@ func handlerUpload(cfg *cloudcfg.CloudConfig, args []string) error {
 		RunID:     cfg.GetRunID(),
 		Category:  category,
 		Timestep:  timeStep,
-		Filename:  fullKey,
+		Filename:  filename,
 		CreatedAt: current,
 		UpdatedAt: current,
 	})
