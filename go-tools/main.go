@@ -34,6 +34,7 @@ func main() {
 	}
 
 	// Start the REPL
+	fmt.Print("\n")
 	fmt.Println("Simulation file uploader REPL ready. Type 'help' or 'exit'.")
 
 	scanner := bufio.NewScanner(os.Stdin)
