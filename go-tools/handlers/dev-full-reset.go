@@ -26,14 +26,15 @@ func handlerFullDataReset(cfg *cloudcfg.CloudConfig, args []string) error {
 	// Reset the databases
 	err = cfg.GetDBQueries().WipeTwoBodyTable(context.Background())
 	if err != nil {
-		fmt.Println("twobody_params table wiped")
 		return errors.New("failed to reset twobody_params table" + err.Error())
 	}
+	fmt.Println("twobody_params table wiped")
+
 	err = cfg.GetDBQueries().WipeTwoBodyFiles(context.Background())
 	if err != nil {
-		fmt.Println("twobody_filepaths table wiped")
 		return errors.New("failed to reset twobody_filepaths" + err.Error())
 	}
+	fmt.Println("twobody_filepaths table wiped")
 
 	// Reset the S3 bucket
 	err = s3utils.WipeS3Bucket(cfg.GetS3Client(), cfg.GetS3Bucket())
