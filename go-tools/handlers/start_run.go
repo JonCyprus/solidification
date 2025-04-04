@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"bufio"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"os"
 	cloudcfg "solidification/config_cloud"
 	"solidification/internal/database"
 	"time"
@@ -21,6 +23,22 @@ func handlerStartRun(cfg *cloudcfg.CloudConfig, args []string) error {
 		return errors.New("usage: upload <one-body OR two-body> <filename.ext>")
 	}
 
+	// Get the version of simulation
+	var version string
+	if len(args) > 1 {
+		version = args[1]
+	} else {
+		version = "latest"
+	}
+	cfg.SetRunVersion(version)
+	// Get the note for the run
+	fmt.Print("Enter a note: ")
+	scanner := bufio.NewScanner(os.Stdin)
+	if !scanner.Scan() {
+		return errors.New("failed to read note from input")
+	}
+	note := scanner.Text()
+
 	queries := cfg.GetDBQueries()
 
 	// Update the sql record
@@ -35,7 +53,7 @@ func handlerStartRun(cfg *cloudcfg.CloudConfig, args []string) error {
 				Density:     cfg.GetRunDensity(),
 				Version:     cfg.GetRunVersion(),
 				RunID:       cfg.GetRunID(),
-				Note:        sql.NullString{String: "", Valid: false}, //will change later
+				Note:        sql.NullString{String: note, Valid: true}, //will change later
 				CreatedAt:   current,
 				UpdatedAt:   current,
 			})

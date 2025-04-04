@@ -22,7 +22,6 @@ func main() {
 	}
 	cfg.SetRunTemperature(params.Temperature)
 	cfg.SetRunDensity(params.Density)
-	cfg.SetRunVersion("Default")
 
 	// Start the REPL
 	fmt.Print("\n")
