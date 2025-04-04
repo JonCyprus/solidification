@@ -58,8 +58,10 @@ func init() {
 		callback:    searchHelp,
 	}
 
-	searchingCommands["two-body"] = searchingSubCommand{
-		name:        "two-body",
-		description: "Search for two body search results",
+	searchingCommands["all"] = searchingSubCommand{
+		name:        "all",
+		usage:       "search all [optional]-t",
+		description: "gives all results for table of runs, -t includes the created at and updated at information per run",
+		callback:    searchAllRuns,
 	}
 }
