@@ -10,7 +10,7 @@ import (
 
 func handlerSearch(cfg *cloudcfg.CloudConfig, args []string) error {
 	if len(args) < 1 {
-		return errors.New("usage: search <one-body OR two-body> <commands> [use 'search help' for list of commands and usage]")
+		return errors.New("usage: search <command> [use 'search help' for list of commands and usage]")
 	}
 
 	err := search.InvokeSearchCommand(strings.ToLower(args[0]), args[1:], cfg)
