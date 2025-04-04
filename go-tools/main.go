@@ -15,11 +15,6 @@ func main() {
 	cfg := cloudcfg.InitializeCloudConfig()
 	defer cfg.GetDB().Close()
 
-	err := handlers.InvokeCommand("start-run", []string{}, cfg)
-	if err != nil {
-		log.Fatalf("error initializing unique runID: %v", err.Error())
-	}
-
 	// Current band-aid for setting the parameters, will change to be in dif config and change depending on run type
 	params, err := cloudcfg.UnmarshalRunParams()
 	if err != nil {
@@ -28,6 +23,12 @@ func main() {
 	cfg.SetRunTemperature(params.Temperature)
 	cfg.SetRunDensity(params.Density)
 	cfg.SetRunVersion("Default")
+
+	// Inject run info into SQL database still bandaid
+	err = handlers.InvokeCommand("start-run", []string{"two-body"}, cfg)
+	if err != nil {
+		log.Fatalf("error starting new run: %v", err.Error())
+	}
 
 	// Start the REPL
 	fmt.Println("Simulation file uploader REPL ready. Type 'help' or 'exit'.")
