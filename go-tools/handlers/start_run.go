@@ -1,13 +1,11 @@
 package handlers
 
 import (
-	"bufio"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"os"
 	cloudcfg "solidification/config_cloud"
 	"solidification/internal/database"
 	"time"
@@ -34,7 +32,7 @@ func handlerStartRun(cfg *cloudcfg.CloudConfig, args []string) error {
 	cfg.SetRunVersion(version)
 	// Get the note for the run
 	fmt.Print("Enter a note: ")
-	scanner := bufio.NewScanner(os.Stdin)
+	scanner := cfg.GetInputScanner()
 	if !scanner.Scan() {
 		return errors.New("failed to read note from input")
 	}
