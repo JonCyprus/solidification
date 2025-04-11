@@ -18,7 +18,7 @@ func main() {
 
 	// Initialize config_cloud connections
 	cfg := cloudcfg.InitializeCloudConfig()
-	defer cfg.GetDB().Close()
+	defer func() { _ = cfg.GetDB().Close() }()
 
 	// Initialize socket connection/ scanner
 	if *socketMode {
