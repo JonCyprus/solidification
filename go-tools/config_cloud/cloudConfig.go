@@ -1,6 +1,7 @@
 package config_cloud
 
 import (
+	"bufio"
 	"database/sql"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
@@ -17,6 +18,7 @@ type CloudConfig struct {
 	runTemperature float64
 	runDensity     float64
 	runVersion     string
+	inputScanner   *bufio.Scanner
 	runID          uuid.UUID
 	db             *sql.DB
 	dbQueries      *database.Queries
@@ -62,6 +64,8 @@ func (cfg *CloudConfig) GetRunVersion() string {
 	return cfg.runVersion
 }
 
+func (cfg *CloudConfig) GetInputScanner() *bufio.Scanner { return cfg.inputScanner }
+
 // Constructors
 
 func (cfg *CloudConfig) SetRunID(runID uuid.UUID) {
@@ -81,6 +85,12 @@ func (cfg *CloudConfig) SetRunDensity(density float64) {
 
 func (cfg *CloudConfig) SetRunVersion(version string) {
 	cfg.runVersion = version
+	return
+}
+
+func (cfg *CloudConfig) SetScanner(scanner *bufio.Scanner) {
+	cfg.inputScanner = scanner
+	return
 }
 
 // SetDBQueries This is really a query wrapper not the websocket connection itself
