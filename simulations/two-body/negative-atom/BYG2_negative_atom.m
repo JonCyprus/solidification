@@ -1,7 +1,7 @@
 % This script finds the two-body distribution function for a uniform liquid
 % in two dimensions.
 
-%%%%%%%%%%%%%%%%%%%%% Access the functions from the library
+%%%%%%%%%%%%%%%%% Access the functions from the library and params
 thisFile = mfilename('fullpath');
 thisDir = fileparts(thisFile);
 
@@ -12,16 +12,17 @@ addpath(genpath(fullfile(projectRoot,'lib')));
 
 % Load params from config dir
 configDir = fullfile(projectRoot, 'config');
-sharedParams = load_params(fullfile(configDir, 'shared'));
-twobodyParams = load_params(fullefile(configDir, 'two_body'));
+sharedParams = load_params(fullfile(configDir, 'shared', 'shared_params.json'));
+twobodyParams = load_params(fullfile(configDir, 'two_body', 'two_body_params.json'));
 
 %%% Parameter from two body evolution
 % Load in p0_12
-data = load('p0_12_temp.mat');
-p0_12 = data.p0_12_700; %load in the data at 1200k
+%data = load(fullfile(projectRoot, 'local data', 'converged_two_body/1200K_1650000.mat'));
+%p0_12 = data.p; %load in the data
+
 
 %%% Overall parameters
-max_t = 1e-6;           % increment of time
+max_t = 1e-10;           % increment of time
 kb = sharedParams.boltzmann;     %Boltzmann constant eV/K
 T = sharedParams.temperature;               % temperature (K), regulates diffusion term, changes
 kbT = kb * T;           %kb .* T;  % Product of kb and T; kbT = 0.1215 eV at 1410K (From MD)
@@ -52,6 +53,8 @@ N_circ = 0.1362 * A_circ;
 S_density = N_circ / A_circ;     % This is 0.1362 N/Angstrom^2
 P_density = N_circ * (N_circ - 1) / A_circ^2; % is this really L^4 since we are doing radial distance?
 PdS_density = (N_circ - 1) / A_circ;
+
+p0_12 = PdS_density .* ones( n, 1 ); % assume the one-body is constant and replace with one_body * one_body - p*star factor
 
 %one_body = N / L^2;     % This is 0.1362 N/Angstrom^2
 %two_body = N * ( N - 1 ) / L^4;
@@ -110,8 +113,8 @@ v = v_original;
 %v = cont_parabola(v, 0.75 * Re, D, alpha, Re, r);
 
 %%% Creates the modified potential with the polynomial of given conditions
-f1 = poly_solver([[0 8 0], [0 0 1], [0 -2 2]], 'r');
-v = morse_modified(r, f1, 0.1 * Re, 0.75 * Re);
+%f1 = poly_solver([[0 8 0], [0 0 1], [0 -2 2]], 'r');
+%v = morse_modified(r, f1, 0.1 * Re, 0.75 * Re);
 
 %v = v_original; % Testing original potential instead of modified one.
 [ dv, lv ] = taylor( v, r );
@@ -153,7 +156,8 @@ p = ones( n, 1 ) * S_density;
 % bf1_dv_p = j0 .* (T1 * (dv .* p .* rdr)); % goes in loop w/ below
 % fourth = p * (T1' * (bf0_p .* bf1_dv_p0_12 - bf0_p0_12 .* bf1_dv_p)); % backtransformed and scaled
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
+
+
 % %%% Quantities that do not change as we iterate to a sol'n
 % Derivatives of p0_12
 [ dp0_12, lp0_12 ] = taylor( p0_12, r );
@@ -172,9 +176,8 @@ figure(1);
 plot( r, p); 
 xlabel('radial distance (Angstroms)', 'FontSize', 16);
 ylabel('p','FontSize',16);
-title(['Probability density (p) time Evolution', 'T = ', num2str(T), ' density = ', num2str(two_body)]);
-filename1= fullfile('Figure 1', [ num2str(0), '.png']);
-saveas(gcf,filename1);
+title(['Probability density (p) time Evolution', 'T = ', num2str(T), ' density = ', num2str(PdS_density)]);
+
 
 
 time = 0;
@@ -198,6 +201,10 @@ for a = 0:300000000
     snd = -h__star;
     trd = p .* (T0' * (bf0_p .* bf0_h - bf0_p0_12 .* bf0_h__star));
     fth = dp .* (T1' * (bf0_p .* bf1_dv_p0_12 - bf0_p0_12 .* bf1_dv_p));
+
+    %trd(:) = 0;
+    %fth(:) = 0;
+
     change = 2. * G * (fst + snd + ((pi / S_density^1) .* (trd + fth)) );
     %change = change .* scaling;
     
@@ -228,9 +235,9 @@ for a = 0:300000000
         plot( r(1:lim), p(1:lim)); 
         xlabel('radial distance (Angstroms)', 'FontSize', 16);
         ylabel('p','FontSize',16);
-        title(['Probability density (p) time Evolution', 'T = ', num2str(T), ' density = ', num2str(two_body)]);
-        filename1= fullfile('Figure 1', [ num2str(a/1000), '.png']);
-        saveas(gcf,filename1);
+        title(['Probability density (p) time Evolution', 'T = ', num2str(T), ' density = ', num2str(PdS_density)]);
+        % filename1= fullfile('Figure 1', [ num2str(a/1000), '.png']);
+        % saveas(gcf,filename1);
 
         figure(2), clf, hold on;
         plot( r(1:lim), fst(1:lim), 'r' );
@@ -244,13 +251,13 @@ for a = 0:300000000
         ylabel('dp/dt','FontSize',16);
         filename3 = fullfile('Figure 3',[ num2str(a/1000), '.png']);
         title('dp/dt time Evolution');
-        saveas(gcf,filename3);
+        % saveas(gcf,filename3);
 
-        interp_p = interp_data( L, n, R, scale_down, r, p, two_body);
+        interp_p = interp_data( L, n, R, scale_down, r, p, S_density);
         interp_surf( L, interp_p, n, a, N, scale_down, savets);
 
-        filename4 = fullfile('Figure 4',[ num2str(a/1000), '.png']);
-        saveas(gcf,filename4);
+        % filename4 = fullfile('Figure 4',[ num2str(a/1000), '.png']);
+        % saveas(gcf,filename4);
 
         % figure(5);
         % plot( r(1:lim), log(p(1:lim)) ); 

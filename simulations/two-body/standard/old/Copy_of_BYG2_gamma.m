@@ -7,12 +7,18 @@
 %===========================================================
 
 % Adding polynomial stitching functions for the potential
-addpath("Functions")
+thisFile = mfilename('fullpath');
+thisDir = fileparts(thisFile);
+
+% This file is 4 directories deep
+projectRoot = fullfile(thisDir, '..', '..', '..', '..');
+
+addpath(genpath(fullfile(projectRoot,'lib')));
 
 %%% Overall parameters
 max_t = 1e-4;           % increment of time
 kb = 8.61733262e-5;     %Boltzmann constant eV/K
-T = 700;               % temperature (K), regulates diffusion term, changes
+T = 1100;               % temperature (K), regulates diffusion term, changes
 kbT = kb * T;           %kb .* T;  % Product of kb and T; kbT = 0.1215 eV at 1410K (From MD)
 G = 1.;                 % overall mobility constant (in non-constant gamma)
 red = 16;               % factor that reduces the set of frequencies
@@ -154,7 +160,7 @@ for a = 0:max_steps
     p = p + dt * change;
     current_near_mass = 2 * pi * sum((p .* smoothing) .* rdr);
     p = (p .* smoothing) * (near_mass/current_near_mass) + two_body * (1. - smoothing);
-    p = (p .* smoothing) + two_body * (1. - smoothing);
+    %p = (p .* smoothing) + two_body * (1. - smoothing);
     p_new = p;
     lim = n;
     
@@ -181,7 +187,7 @@ for a = 0:max_steps
         ylabel('p','FontSize',16);
         title(['Probability density (p) time Evolution', 'T = ', num2str(T), ' density = ', num2str(two_body)]);
         filename1= fullfile('Figure 1', [ num2str(a/plotting_step), '.png']);
-        saveas(gcf,filename1);
+        % saveas(gcf,filename1);
 
         fig_num = 2;
         figure(fig_num), clf, hold on;
@@ -198,13 +204,13 @@ for a = 0:max_steps
         ylabel('dp/dt','FontSize',16);
         filename3 = fullfile('Figure 3',[ num2str(a/plotting_step), '.png']);
         title('dp/dt time Evolution');
-        saveas(gcf,filename3);
+        % saveas(gcf,filename3);
 
         interp_p = interp_data( L, n, R, scale_down, r, p, two_body);
         interp_surf( L, interp_p, n, a, N, scale_down, savets);
 
         filename4 = fullfile('Figure 4',[ num2str(a/plotting_step), '.png']);
-        saveas(gcf,filename4);
+        % saveas(gcf,filename4);
 
         fig_num = 5;
         figure(fig_num);
@@ -213,7 +219,7 @@ for a = 0:max_steps
         ylabel('p','FontSize',16);
         title(['ln(p)',  'T = ', num2str(T), ' density = ', num2str(two_body)]);
         filename5= fullfile('Figure 5', [ num2str(a/plotting_step), '.png']);
-        saveas(gcf,filename5);
+        % saveas(gcf,filename5);
 
         % Plot change terms for debugging.
 
