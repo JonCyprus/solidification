@@ -50,7 +50,7 @@ S_density = N_circ / A_circ;     % This is 0.1362 N/Angstrom^2
 P_density = N_circ * (N_circ - 1) / A_circ^2; % is this really L^4 since we are doing radial distance?
 PdS_density = (N_circ - 1) / A_circ;
 
-two_body = N * ( N - 1 ) / L^4;
+%two_body = N * ( N - 1 ) / L^4;
 
 %%% Plotting
 plotting_step = 10000;

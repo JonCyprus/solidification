@@ -13,7 +13,7 @@ addpath("Functions")
 %%% Overall parameters
 max_t = 1e-3;           % increment of time
 kb = 8.61733262e-5;     %Boltzmann constant eV/K
-T = 1300;               % temperature (K), regulates diffusion term, changes
+T = 1100;               % temperature (K), regulates diffusion term, changes
 kbT = kb * T;           %kb .* T;  % Product of kb and T; kbT = 0.1215 eV at 1410K (From MD)
 G = 1.;                 % overall mobility constant
 red = 16;               % factor that reduces the set of frequencies
