@@ -14,7 +14,7 @@ func handlerExit(cfg *cloudcfg.CloudConfig, args []string) error {
 		return errors.New("usage: exit")
 	}
 
-	fmt.Println("Exiting simulation file uploader...")
+	fmt.Println("Exiting simulation file handler...")
 	os.Exit(0)
 	return nil // req for signature
 }
