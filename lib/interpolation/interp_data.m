@@ -12,7 +12,7 @@ function [interp_d] = interp_data(L,n_grid, int_r, scaling_factor, r, p,farfield
 % int_r = the max interaction dist. in terms of # Angstroms
 % scaling_factor = factor to scale down box for computational efficiency
 % r = vector of distance of gridpoints from origin in 1-D
-% p = vector of probability densities on gridpoints
+% p = vector of probability densities on gridpoints %%% please rewrite to be more general :(
 
 %%% Initialized parameters when Testing: (Input arguments)
 
@@ -26,6 +26,16 @@ function [interp_d] = interp_data(L,n_grid, int_r, scaling_factor, r, p,farfield
 
 %%%%%%%%%%%%%%%%%%
 
+%%% IMPORTANT %%%
+% for time sake; I am assuming that these will be used for
+% spectral methods, and that an even number of gridpoints must be used
+% and that we have a natural wrapping so one end is 
+% culled off giving (-L/2 to L/2 - dx)
+
+%%% If farfield_val is not provided
+if nargin < 7
+    farfield_val = p(end);
+end 
 % Scaling grid down for quicker computation when scaling_factor !=1
 scaled_n_grid = n_grid ./ scaling_factor;
 

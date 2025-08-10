@@ -72,7 +72,8 @@ for a = 1:3
     col = randi( n - noise ) + ( 1:noise );
     p1(row,col) = p1( row, col ) + 0.1 * p1(1,1) * randn(noise); 
 end
-p2 = circshift(p1, [n/2,n/2]);
+%p2 = circshift(p1, [n/2,n/2]);
+p2=p1;
 
 % Plot the initial case
 Plot3D(1, 1, n, kbT, N, x2, y2, p1);

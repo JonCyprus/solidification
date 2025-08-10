@@ -49,7 +49,7 @@ writeline(sock, runNote)
 
 
 %%% Overall parameters
-max_t = 1e-5;                       % increment of time
+max_t = 1e-10;           % increment of time
 kb = sharedParams.boltzmann;     %Boltzmann constant eV/K
 T = sharedParams.temperature;               % temperature (K), regulates diffusion term, changes
 kbT = kb * T;           %kb .* T;  % Product of kb and T; kbT = 0.1215 eV at 1410K (From MD)
@@ -81,7 +81,7 @@ S_density = N_circ / A_circ;     % This is 0.1362 N/Angstrom^2
 P_density = N_circ * (N_circ - 1) / A_circ^2; % is this really L^4 since we are doing radial distance?
 PdS_density = (N_circ - 1) / A_circ;
 
-p0_12 = PdS_density .* ones( n, 1 ); % assume the one-body is constant and replace with one_body * one_body - p*star factor
+ % assume the one-body is constant and replace with one_body * one_body - p*star factor
 
 %one_body = N / L^2;     % This is 0.1362 N/Angstrom^2
 %two_body = N * ( N - 1 ) / L^4;
@@ -140,8 +140,8 @@ v = v_original;
 %v = cont_parabola(v, 0.75 * Re, D, alpha, Re, r);
 
 %%% Creates the modified potential with the polynomial of given conditions
-f1 = poly_solver([[0 8 0], [0 0 1], [0 -2 2]], 'r');
-v = morse_modified(r, f1, 0.1 * Re, 0.75 * Re);
+% f1 = poly_solver([[0 8 0], [0 -0.0 1], [0 -2 2]], 'r');
+% v = morse_modified(r, f1, 0.1 * Re, 0.75 * Re);
 
 %v = v_original; % Testing original potential instead of modified one.
 [ dv, lv ] = taylor( v, r );
@@ -185,18 +185,6 @@ p = ones( n, 1 ) * S_density;
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% %%% Quantities that do not change as we iterate to a sol'n
-% Derivatives of p0_12
-[ dp0_12, lp0_12 ] = taylor( p0_12, r );
-
-%Third term constants
-h = lv .* p0_12 + dv .* dp0_12;
-bf0_h = j0 .* (T0 * ( h .* rdr ) );
-bf0_p0_12 = j0 .* (T0 * (p0_12 .* rdr));
-
-%Fourth term constants
-bf1_dv_p0_12 = j0 .* (T1 * (dv .* p0_12 .* rdr));
-%bf0_p0_12 = bf0_p0_12; %for clarity
 
 % Temporary initial visualization for fig 1
 figure(1);
@@ -212,6 +200,19 @@ for a = 0:300000000
     %%% Calculation of quantities regarding p for change
         % CHECK WHETHER THIS HELPS
         %p = lr .* ( p - two_body) + two_body %%breaks code and gives NaN
+    p0_12 = S_density .* p;
+% %%% Quantities that do not change as we iterate to a sol'n
+% Derivatives of p0_12
+[ dp0_12, lp0_12 ] = taylor( p0_12, r );
+
+%Third term constants
+h = lv .* p0_12 + dv .* dp0_12;
+bf0_h = j0 .* (T0 * ( h .* rdr ) );
+bf0_p0_12 = j0 .* (T0 * (p0_12 .* rdr));
+
+%Fourth term constants
+bf1_dv_p0_12 = j0 .* (T1 * (dv .* p0_12 .* rdr));
+%bf0_p0_12 = bf0_p0_12; %for clarity
     
     % derivatives of p and h__star
     [ dp, lp ] = taylor( p, r );
