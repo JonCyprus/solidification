@@ -8,13 +8,13 @@ function D = get_spectral_multiplier(Nx, Ny, Lx, Ly, kind)
 % calculated the same way. Also implement function caching so wavenumber vectors
 % are not constantly recomputed
 
-% Form the wavenumber vectors and scale them
+% Form the wavenumber vectors and scale them (for even grid Nx/Ny)
 kx = [0:(Nx/2 -1), -Nx/2:-1]' * ((2 * pi) / Lx);
 ky = [0:(Ny/2 -1), -Ny/2:-1]' * ((2 * pi) / Ly);
 
 % Form the meshgrid for wavenumber vectors 
 [KX, KY] = meshgrid(kx, ky);
-
+% [KX, KY] = ndgrid(kx, ky);
 
 % Select operator
 switch lower(kind)

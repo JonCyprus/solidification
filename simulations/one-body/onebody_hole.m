@@ -55,7 +55,7 @@ v = interp_data_spectral(L, n, data.L, 2, data.r, data.v); %2 needs to be genera
 
 % Plotting parameters
 total_step = 40000000;  % total number of steps
-plotting_step = 20;     % Incremental step for plotting
+plotting_step = 200;     % Incremental step for plotting
 
 % Initialization of x2 and y2 matrices (Real Space)
 % x2 = linspace(-L/2,L/2,n+1)'* ones(1,n+1);
@@ -96,8 +96,9 @@ for a = 1:3
     col = randi( n - noise ) + ( 1:noise );
     p1(row,col) = p1( row, col ) + 0.1 * p1(1,1) * randn(noise); 
 end
-%p2 = circshift(p1, [n/2,n/2]);
+
 p2=p1;
+
 
 % Plot the initial case
 Plot3D(1, 1, n, kbT, N, x2, y2, p1);
@@ -128,11 +129,12 @@ dp_hole_dx = real(ifft2(spectral_x .* fft2(p_hole)));
 dp_hole_dy = real(ifft2(spectral_y .* fft2(p_hole)));
 
 dp1_dx = real(ifft2(spectral_x .* fft2(p_hole)));
-dp1_dy = real(ifft2(spectral_x .* fft2(p_hole)));
-lap_p1 = real(ifft2(spectral_x .* fft2(p_hole)));
+dp1_dy = real(ifft2(spectral_y .* fft2(p_hole)));
+lap_p1 = real(ifft2(spectral_lap .* fft2(p_hole))); % Double check and make clear just initializing
 
 v_hat = fft2(v);
-
+v_test = ifftshift(v); %fixes it for term 2??????????? not sure why; was one accidentally corner convention?
+%%% MATLAB expects corner origin convention. But p is center origin so not sure what gives
 %%% Integral constants
 subtract_hole = p_hole - N1_A;
 
@@ -175,12 +177,20 @@ for s = start:total_step
 
     % 2nd Term
     %second = real(ifft2(spectral_lap .* (p_hat .* v_hat)));
-    %second = (second + second_constant) .* p1;
-    % second = real(ifft2(spectral_lap .* p_hat .* v_hat));
-    second = real(ifft2(p_hat .* fft2(v_lap)));
-
+    %second = (second + second_constant) .* p1; % Make sure to add this back in
+    second = real(ifft2(spectral_lap .* p_hat .* v_hat)); % original one
+    %second = real(ifft2(spectral_lap .* fftshift(p_hat) .* fft2(v_test))); %weird background noise
+    if mod(s, 20) == 0
+        Plot3D(3, s, n , kbT, N, x2, y2, second);
+        1;
+    end
+    
     % 3rd Term (x contributions)
     third = real(ifft2(spectral_x .* p_hat .* v_hat));
+    if mod(s, 20) == 0
+        Plot3D(4, s, n , kbT, N, x2, y2, third);
+        1;
+    end
     third = third - third_constant; %%% The plus may be a minus sign 
     third = third .* dp1_dx;
 
@@ -245,10 +255,10 @@ for s = start:total_step
     if mod(s, plotting_step) == 0
         Plot3D(1, s, n , kbT, N, x2, y2, p1);
         % Plotting terms for debugging
-        Plot3D(2, s, n , kbT, N, x2, y2, first);
-        Plot3D(3, s, n , kbT, N, x2, y2, second);
-        Plot3D(4, s, n, kbT, N, x2, y2, third);
-        Plot3D(5, s, n, kbT, N, x2, y2, fourth);
+        %Plot3D(2, s, n , kbT, N, x2, y2, first);
+        %Plot3D(3, s, n , kbT, N, x2, y2, second); % Problematic term
+        % Plot3D(4, s, n, kbT, N, x2, y2, third);
+        % Plot3D(5, s, n, kbT, N, x2, y2, fourth);
         figure(1);
         filename1= fullfile('y', [ num2str(a/plotting_step), '.png']);
         % saveas(gcf,filename1);
