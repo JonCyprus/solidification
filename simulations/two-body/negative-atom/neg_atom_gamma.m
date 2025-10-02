@@ -57,8 +57,8 @@ Re = 2.866;             % Lattice Parameter from LAMMPS (Angstroms) Do a slow do
 Rc = 15;                % Used in LAMMPS
 
 %%% Two dimensional parameters: NOTE: ADD TO TWO_BODY PARAMS.JSON
-L = 0.5 .* 38.9823 * Re;      % length of simulation cell edge, adjusted for density 0.1362 atoms/angstrom^2 from L=40
-N = 0.25 .* 1700 * 1.;        % number of particles
+L = (1/8) .* 38.9823 * Re;      % length of simulation cell edge, adjusted for density 0.1362 atoms/angstrom^2 from L=40
+N = (1/64) .* 1700 * 1.;        % number of particles
 
 %%% Uniform liquid parameters NOTE: ADD TO SHARED_PARAMS.JSON
 n = 2 * 4096;           % number of lattice sites in one dimension
@@ -106,7 +106,8 @@ rdr = integrate( r );
 total_mass = N_circ;
 
 % Non-constant Gamma term
-g_r = gamma_g(G, r, 0.5 * Re, 1. * Re);
+g_r = gamma_g(G, r, 0.75 * Re, 1.25 * Re);
+%g_r = gamma_g(G, r, 0.5 * Re, 1. * Re);
 %g_r = gamma_g(G, r, 0.75 * R, 0.9 * R); %0.75 * R to 0;.9 * R
 
 %%% For scaling the magnitude of changes
@@ -128,7 +129,7 @@ T1 = besselj( 1, k * r' );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% Code pertaining to potentials
 
 %%% Potentials: exp-6, 10-6, Morse, hard sphere
-% v_original = morse_potential(D,alpha,Re,Rc,r);
+%v_original = morse_potential(D,alpha,Re,Rc,r);
 
 %%% Modifies the potential - should change with kbT and density
 % v = plateau_a( v, r, 2. );
@@ -140,6 +141,7 @@ T1 = besselj( 1, k * r' );
 %%% Creates the modified potential with the polynomial of given conditions
 f1 = poly_solver([[0 8 0], [0 0 1], [0 -2 2]], 'r');
 v = morse_modified(r, f1, 0.1 * Re, 0.75 * Re);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

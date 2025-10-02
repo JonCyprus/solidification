@@ -23,7 +23,7 @@ sharedParams = load_params(fullfile(configDir, 'shared', 'shared_params.json'));
 onebodyParams = load_params(fullfile(configDir, 'one_body', 'one_body_params.json'));
 
 % Loading.mat with p__hole (p__star in other code) v functions
-dataFile = fullfile(projectRoot, 'local data','converged_two_body', 'conv_hole_1300.mat'); %%% Make sure to use formatted strings and adhere to convention to make it work seamlessly btwn Temps
+dataFile = fullfile(projectRoot, 'local data','converged_two_body', 'conv_hole_1300_new.mat'); %%% Make sure to use formatted strings and adhere to convention to make it work seamlessly btwn Temps
 data = load(dataFile);
 
 % General Parameters
@@ -57,13 +57,9 @@ v = interp_data_spectral(L, n, data.L, 2, data.r, data.v); %2 needs to be genera
 total_step = 40000000;  % total number of steps
 plotting_step = 200;     % Incremental step for plotting
 
-% Initialization of x2 and y2 matrices (Real Space)
-% x2 = linspace(-L/2,L/2,n+1)'* ones(1,n+1);
-% x2 = x2(1:end-1, 1:end-1);
-% y2 = ones(1,n+1)' * linspace (-L/2,L/2,n+1);
-% y2 = y2(1:end-1, 1:end-1);
+% Initialization of x and y matrices (Real Space)
 x1D = linspace(-L/2, L/2 - delta, n); %Remove last point for wrapping for spectral methods
-[x2, y2] = meshgrid(x1D); 
+[X, Y] = meshgrid(x1D); 
 
 % Get spectral differentiation operators (used as a multiplier after fft)
 spectral_x = get_spectral_multiplier(n, n, L, L, 'dx');
@@ -74,34 +70,26 @@ spectral_lap = get_spectral_multiplier(n, n, L, L, 'laplacian');
 %p_hole = p_hole * (N / (sum(p_hole(:)) * dA)); %break point and double check density is the same integration should end up to N atoms
 p_hole = gpuArray(p_hole);
 
-%%% Check that integrates to N-1 outside cutoff (after 1 Re) %%%
-% Distance from origin
-% R = sqrt(x2.^2 + y2.^2);
-% outside_hole_mask = R > Re;
-% 
-% %Integrate and average outside the hole
-% outside_integral = sum(p_hole(outside_hole_mask)) * dA;
-% outside_area = sum(outside_hole_mask(:)) * dA;
-% outside_density = outside_integral / outside_area;
-% fprintf('Density outside hole: %.6f | N1_A: %.6f\n', outside_density, N1_A);
-
-%%%                 %%%
-
-% Adding perturbation to simulation box
+% Initialize p1
 p1 = ones(n);
 p1 = p1 * N / (sum(sum(p1)) * dA);
-noise = 50;
-for a = 1:3
-    row = randi( n - noise ) + ( 1:noise);
-    col = randi( n - noise ) + ( 1:noise );
-    p1(row,col) = p1( row, col ) + 0.1 * p1(1,1) * randn(noise); 
-end
 
+%%% Add perturbation to simulation box
+% Add Gaussian noise (Avoids derivative artifacts)
+noise_count = 3;
+sigma_range = [5 * delta, 10 * delta]; %[minSigma, maxSigma]
+amplitude_range = [-0.01 * p1(1), 0.01 * p1(1)]; %[minAmp, maxAmp]
+
+p1 = create_noise(noise_count, sigma_range, amplitude_range ,L, p1);
 p2=p1;
 
 
 % Plot the initial case
-Plot3D(1, 1, n, kbT, N, x2, y2, p1);
+%Plot3D(1, x2, y2, p1);
+tiledlayout(5,2, 'Padding','compact', 'TileSpacing','compact');
+nexttile(1);
+Plot3D(gca, X, Y, p1);
+title(['Total steps = 0','   n =', num2str(n),'   KbT = ', num2str(kbT),'   N=',num2str(N)]);
 
 % Speed up Fast Fourier Transforms
  fftw('dwisdom', []);
@@ -114,13 +102,14 @@ Plot3D(1, 1, n, kbT, N, x2, y2, p1);
 %%% Values that do not change as we iterate
 
 %%% Potential Gradients/Laplacian
-% dv_dx = nablax(v2_12, delta);
-% dv_dy = nablay(v2_12, delta);
+% dv_dx = nablax(v, delta);
+% dv_dy = nablay(v, delta);
 dv_dx = real(ifft2(spectral_x .* fft2(v)));
-dv_dy = real(ifft2(spectral_y .* fft2(v))); % check that these work prolly make another function to return w/o ifft
+dv_dy = real(ifft2(spectral_y .* fft2(v))); 
 
-v_lap = laplacian3(v, delta);
-%v_lap = real(ifft2(spectral_lap .* fft2(v)));
+
+%v_lap = laplacian3(v, delta);
+v_lap = real(ifft2(spectral_lap .* fft2(v)));
 
 %%% Two-body probability Gradients
 % dp_hole_dx = nablax(p_hole, delta);
@@ -128,13 +117,13 @@ v_lap = laplacian3(v, delta);
 dp_hole_dx = real(ifft2(spectral_x .* fft2(p_hole)));
 dp_hole_dy = real(ifft2(spectral_y .* fft2(p_hole)));
 
-dp1_dx = real(ifft2(spectral_x .* fft2(p_hole)));
-dp1_dy = real(ifft2(spectral_y .* fft2(p_hole)));
-lap_p1 = real(ifft2(spectral_lap .* fft2(p_hole))); % Double check and make clear just initializing
+dp1_dx = real(ifft2(spectral_x .* fft2(p1)));
+dp1_dy = real(ifft2(spectral_y .* fft2(p1)));
+lap_p1 = real(ifft2(spectral_lap .* fft2(p1))); 
 
-v_hat = fft2(v);
-v_test = ifftshift(v); %fixes it for term 2??????????? not sure why; was one accidentally corner convention?
-%%% MATLAB expects corner origin convention. But p is center origin so not sure what gives
+%v_hat = fft2(v); %original w/o fftshift
+v_hat = fft2(circshift(v, [n/2, n/2])); %fixes it for terms not sure why;
+
 %%% Integral constants
 subtract_hole = p_hole - N1_A;
 
@@ -149,19 +138,16 @@ third_constant = sum(dv_dx .* subtract_hole, 'all') .* dA;
 fourth_constant = sum(dv_dy .* subtract_hole, 'all') .* dA;
 
 % Move to GPU for calculations
-
 p2 = gpuArray(p2);
 p1 = gpuArray(p1);
 spectral_x = gpuArray(spectral_x);
 spectral_y = gpuArray(spectral_y);
 spectral_lap = gpuArray(spectral_lap);
-second_constant = gpuArray(second_constant);
-third_constant = gpuArray(third_constant);
-fourth_constant = gpuArray(fourth_constant);
 
+% Evolve the system via loop
 start = 1;
+total_time = 0;
 for s = start:total_step
-    disp(s)
     p_hat = fft2(p1);
 
     %%% Derivatives for p1
@@ -172,95 +158,119 @@ for s = start:total_step
     dp1_dy = real(ifft2(spectral_y .* p_hat));
     lap_p1 = real(ifft2(spectral_lap .* p_hat));
 
-    % 1st Term
+    %%% 1st Term %%%
     first = kbT * lap_p1;
-
-    % 2nd Term
-    %second = real(ifft2(spectral_lap .* (p_hat .* v_hat)));
-    %second = (second + second_constant) .* p1; % Make sure to add this back in
-    second = real(ifft2(spectral_lap .* p_hat .* v_hat)); % original one
-    %second = real(ifft2(spectral_lap .* fftshift(p_hat) .* fft2(v_test))); %weird background noise
-    if mod(s, 20) == 0
-        Plot3D(3, s, n , kbT, N, x2, y2, second);
+    % Plotting First Term
+    if mod(s, plotting_step) == 0
+        nexttile(2);
+        Plot3D(gca, X, Y, first);
+        gcf();
+        title("First Term");
         1;
     end
     
-    % 3rd Term (x contributions)
-    third = real(ifft2(spectral_x .* p_hat .* v_hat));
-    if mod(s, 20) == 0
-        Plot3D(4, s, n , kbT, N, x2, y2, third);
+    %%% 2nd Term %%%
+    second = real(ifft2(spectral_lap .* p_hat .* v_hat)); 
+    % Plotting 2nd term before offset
+    if mod(s, plotting_step) == 0
+        nexttile(3);
+        Plot3D(gca, X, Y, second);
+        gcf();
+        title("Second Term Before Constant");
         1;
     end
-    third = third - third_constant; %%% The plus may be a minus sign 
+
+    second = (second + second_constant) .* p1;
+
+    % Plotting after offset and multiplication
+    if mod(s, plotting_step) == 0
+        nexttile(4);
+        Plot3D(gca, X, Y, second);
+        gcf();
+        title("Second Term");
+        1;
+    end
+    
+    %%% 3rd Term (x contributions) %%%
+    third = real(ifft2(spectral_x .* p_hat .* v_hat));
+
+    %Plotting before offset
+    if mod(s, plotting_step) == 0
+        nexttile(5);
+        Plot3D(gca, X, Y, third);
+        gcf();
+        title("Third Term Before Constant");
+        1;
+    end
+
+    third = third - third_constant; %%% The minus may be plus (should be minus)
     third = third .* dp1_dx;
 
-    % 4th Term (y contributions)
+    %Plotting after offset and multiplication
+    if mod(s, plotting_step) == 0
+        nexttile(6);
+        Plot3D(gca, X, Y, third);
+        gcf();
+        title("Third Term");
+        1;
+    end
+
+    %%% 4th Term (y contributions) %%%
     fourth = real(ifft2(spectral_y .* p_hat .* v_hat));
-    fourth = fourth - fourth_constant; %%% The plus may be a minus sign 
+
+    % Plotting before offset
+    if mod(s, plotting_step) == 0
+        nexttile(7);
+        Plot3D(gca, X, Y, fourth);
+        gcf();
+        title("Fourth Term Before Constant");
+        1;
+    end
+
+    fourth = fourth - fourth_constant; %%% The minus may be plus (should be minus)
     fourth = fourth .* dp1_dy;
+
+    % Plotting after offset and multiplication
+    if mod(s, plotting_step) == 0
+        nexttile(8);
+        Plot3D(gca, X, Y, fourth);
+        gcf();
+        title("Fourth Term");
+        1;
+    end
 
     % Total Contribution:
     change = G * (first + second + third + fourth);
 
+    if mod(s, plotting_step) == 0
+        nexttile(9);
+        Plot3D(gca, X, Y, change);
+        gcf();
+        title("Total Change");
+        1;
+    end
     %%% Applying Change - EULER STEP
     % Enforces Positivity
     tmp = -p1 ./ change; %%% Change should be non-zero everywhere; but may want to guard for division by near 0
-    dt = min(0.0005 * min(tmp(tmp > 0)), max_ts);
+    dt = min(0.5 * min(tmp(tmp > 0)), max_ts);
     %dt = max_ts;
     % Applies change
     p1 = p1 + change .* dt;
     %p2 = p1;
-    
+    total_time = total_time + dt;
 
-    %%% Applying Change - RK4 STEP
-    % k1 = change;
-    % 
-    % tmp = -(p1 - small) ./ k1;
-    % dt = min([1.0 * min(tmp(tmp > 0)), max_ts]);
-    % 
-    % p1_temp = p1 + (k1 * (dt/2));
-    % k2 = dp1_dt_calc(p1_temp,delta, kbT, p2, fw1, fwx2, fwy2, dA, one_body, G);
-    % 
-    % p1_temp = p1 + (k2 * (dt/2));
-    % k3 = dp1_dt_calc(p1_temp,delta, kbT, p2, fw1, fwx2, fwy2, dA, one_body, G);
-    % 
-    % p1_temp = p1 + (k3 * dt);
-    % k4 = dp1_dt_calc(p1_temp,delta, kbT, p2, fw1, fwx2, fwy2, dA, one_body, G);
-    % 
-    % change = (1/6) * (k1 + (2 * k2) + (2 * k3) + k4);
-    % 
-    % disp(['Time step: ', num2str(dt)]);
-    % disp(['Min value: ', num2str(min(p1(:)))])
-    % p1 = p1 + change * dt;
-    
-
-    %%% I don't remember what this was for; check later
-    %p1(p1 < 0.) = 0.;
-    % if any(p1(:) < 0.)
-    %     dt = dt / 4.;
-    %     p1(p1 < 0.) = 0.;
-    %     p1 = p1 * N / (sum(p1(:)) * dA);
-    % else
-    %     if dt < 1e-3
-    %         dt = dt * 2.;
-    %     end 
-    % end
-    
     %%% Normalization of p1
     p1 = p1 * N / (sum(sum(p1)) * dA);
     % p2 = circshift(p1,[n/2, n/2]);
     
-
+    disp([num2str(s), ' ', num2str(total_time), ' ', num2str(max(max(p1)))]);
     % Plot Data
     if mod(s, plotting_step) == 0
-        Plot3D(1, s, n , kbT, N, x2, y2, p1);
-        % Plotting terms for debugging
-        %Plot3D(2, s, n , kbT, N, x2, y2, first);
-        %Plot3D(3, s, n , kbT, N, x2, y2, second); % Problematic term
-        % Plot3D(4, s, n, kbT, N, x2, y2, third);
-        % Plot3D(5, s, n, kbT, N, x2, y2, fourth);
-        figure(1);
-        filename1= fullfile('y', [ num2str(a/plotting_step), '.png']);
+        nexttile(1);
+        Plot3D(gca, X, Y, p1);
+        title(['Total steps = ' num2str(s),'   n =', num2str(n),'   KbT = ', num2str(kbT),'   N=',num2str(N)]);
+        %figure(1);
+        %filename1= fullfile('y', [ num2str(a/plotting_step), '.png']);
         % saveas(gcf,filename1);
     end
     %%% Convert arrays to GPU arrays to greatly speed up computation
