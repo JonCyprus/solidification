@@ -140,8 +140,8 @@ v = v_original;
 %v = cont_parabola(v, 0.75 * Re, D, alpha, Re, r);
 
 %%% Creates the modified potential with the polynomial of given conditions
-% f1 = poly_solver([[0 8 0], [0 -0.0 1], [0 -2 2]], 'r');
-% v = morse_modified(r, f1, 0.1 * Re, 0.75 * Re);
+ f1 = poly_solver([[0 8 0], [0 -0.0 1], [0 -2 2]], 'r');
+ v = morse_modified(r, f1, 0.1 * Re, 0.75 * Re);
 
 %v = v_original; % Testing original potential instead of modified one.
 [ dv, lv ] = taylor( v, r );

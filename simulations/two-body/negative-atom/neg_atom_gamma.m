@@ -20,25 +20,25 @@ replDir = fullfile(projectRoot, 'go-tools');
 replPath = fullfile(replDir, 'fileREPL.exe');
 tempDir = fullfile(projectRoot, 'temp_data');
 
-try
-    sock = tcpclient("127.0.0.1", 9000, "Timeout", 1);
-    disp("REPL already running.");
-catch
-    disp("Starting REPL...");
-    
-    oldDir = cd(replDir);  % <- go to folder where the .exe is
-    system('start "" fileREPL.exe --socket');  % use relative path now
-    cd(oldDir);  % <- go back to where MATLAB started
-    
-    pause(2);
-    sock = tcpclient("127.0.0.1", 9000, "Timeout", 3);
-end
-
-cleanUp = onCleanup(@() cleanup(sock));
-writeline(sock, "start-run two-body");
-pause(2);
-runNote = 'none';
-writeline(sock, runNote)
+% try
+%     sock = tcpclient("127.0.0.1", 9000, "Timeout", 1);
+%     disp("REPL already running.");
+% catch
+%     disp("Starting REPL...");
+% 
+%     oldDir = cd(replDir);  % <- go to folder where the .exe is
+%     system('start "" fileREPL.exe --socket');  % use relative path now
+%     cd(oldDir);  % <- go back to where MATLAB started
+% 
+%     pause(2);
+%     sock = tcpclient("127.0.0.1", 9000, "Timeout", 3);
+% end
+% 
+% cleanUp = onCleanup(@() cleanup(sock));
+% writeline(sock, "start-run two-body");
+% pause(2);
+% runNote = 'none';
+% writeline(sock, runNote)
 
 %%% Simulation parameters
 kb = sharedParams.boltzmann;     %Boltzmann constant eV/K
@@ -63,7 +63,7 @@ N = (1/64) .* 1700 * 1.;        % number of particles
 %%% Uniform liquid parameters NOTE: ADD TO SHARED_PARAMS.JSON
 n = 2 * 4096;           % number of lattice sites in one dimension
 %R = 4 * Re; %0.5 * L;            % maximum distance of interacting particles \ Was 20 when L was 40
-R = 6 * Re;
+R = 2*Re;%6 * Re;
 
 %%% File parameters
 scale_down = 2 .^ (3);  % Grid-scale down factor for fig4 (interp_p and surface); 0 <= exponent <= 5 for "sufficient" res
@@ -74,8 +74,8 @@ savets = 1500000;       % Time step multiple that files are saved
 % Try running the one-body code 
 
 %%% 
-L =  (38.9823 * Re)/2;       % Length of simulation cell edge %Changed to half the size removed 2 * (division by 4 from original) remove magic number it is tied to density
-N =  1700/4 * 1.; 
+L =  (38.9823 * Re)/(2);       % Length of simulation cell edge %Changed to half the size removed 2 * (division by 4 from original) remove magic number it is tied to density
+N =  1700/((2)^2) * 0.8; 
 S_density = N/(L^2); 
 PdS_density = (N-1)/L^2;
  
@@ -263,7 +263,7 @@ for a = 0:max_steps
         filename1 = 'fig1.jpg';
         saveas(gcf, fullfile(tempDir, filename1));
         cmd = sprintf("upload two-body Figure1 %d %s", a, filename1);
-        writeline(sock, cmd)
+        % writeline(sock, cmd)
 
         fig_num = 2;
         figure(fig_num), clf, hold on;
@@ -282,7 +282,7 @@ for a = 0:max_steps
         filename3 = 'fig3.jpg';
         saveas(gcf, fullfile(tempDir, filename3));
         cmd = sprintf("upload two-body Figure3 %d %s", a, filename3);
-        writeline(sock, cmd)
+        % writeline(sock, cmd)
 
         interp_p = interp_data( L, n, R, scale_down, r, p__star, PdS_density);
         interp_surf( L, interp_p, n, a, N, scale_down, savets);

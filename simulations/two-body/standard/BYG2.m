@@ -7,13 +7,23 @@
 % slowdown method
 %===========================================================
 
+
+%%%%%%%%%%%%%%%%% Access the functions from the library and params
+thisFile = mfilename('fullpath');
+thisDir = fileparts(thisFile);
+
+% This file is 3 directories deep
+projectRoot = fullfile(thisDir, '..', '..', '..');
+
+addpath(genpath(fullfile(projectRoot,'lib')));
+
 % Adding polynomial stitching functions for the potential
-addpath("Functions")
+
 
 %%% Overall parameters
 max_t = 1e-3;           % increment of time
 kb = 8.61733262e-5;     %Boltzmann constant eV/K
-T = 1100;               % temperature (K), regulates diffusion term, changes
+T = 1400;               % temperature (K), regulates diffusion term, changes
 kbT = kb * T;           %kb .* T;  % Product of kb and T; kbT = 0.1215 eV at 1410K (From MD)
 G = 1.;                 % overall mobility constant
 red = 16;               % factor that reduces the set of frequencies
@@ -158,46 +168,52 @@ for a = 0:3000000
         disp(['Step: ', num2str(a), ' | Time-step: ', num2str(dt), ' | P_min: ', num2str(min(p)) , ' | max(abs(change)): ', num2str(max(abs(change))), ' | kbT: ', num2str(kbT), ' | relative change: ', num2str(max( abs(subset_change))/max( subset_p ))]);
 
         figure(1);
-        plot( r(1:lim), p(1:lim) / two_body ); 
-        xlabel('radial distance (Angstroms)', 'FontSize', 16);
-        ylabel('p','FontSize',16);
-        title(['Probability density (p) time Evolution', 'T = ', num2str(T), ' density = ', num2str(two_body)]);
-        filename1= fullfile('Figure 1', [ num2str(a/1000), '.png']);
-        saveas(gcf,filename1);
+        tiledlayout(1,2, 'TileSpacing', 'compact', 'Padding', 'compact');
+        nexttile;
+        plot( r(1:lim), p(1:lim)); %/ two_body ); 
+        xlabel('Radial Distance (Angstroms)', 'FontSize', 14);
+        ylabel('p (atoms^2/Angstrom^4)','FontSize',14);
+        title('Atomic Density (p) vs. Radial Distance (r)');
+        text(0.75, 0.92, sprintf('Temp = %.f K\nStep = %d', T, a), 'Units', 'normalized')
+        filename1= fullfile('Figure 1', [ num2str(a), '.png']);
+        %saveas(gcf,filename1);
 
-        figure(2), clf, hold on;
-        plot( r(1:lim), fst(1:lim), 'r' );
-        plot( r(1:lim), snd(1:lim), 'g' );
-        plot( r(1:lim), trd(1:lim), 'b' );
-        plot( r(1:lim), fth(1:lim), 'c' );
+        % figure(2), clf, hold on;
+        % plot( r(1:lim), fst(1:lim), 'r' );
+        % plot( r(1:lim), snd(1:lim), 'g' );
+        % plot( r(1:lim), trd(1:lim), 'b' );
+        % plot( r(1:lim), fth(1:lim), 'c' );
 
-        figure(3);
+        % figure(3);
+        nexttile;
         plot( r(1:lim), change(1:lim) / two_body, 'k' );
-        xlabel('radial distance (Angstroms)', 'FontSize', 16);
-        ylabel('dp/dt','FontSize',16);
-        filename3 = fullfile('Figure 3',[ num2str(a/1000), '.png']);
+        xlabel('Radial Distance (Angstroms)', 'FontSize', 14);
+        ylabel('dp/dt','FontSize',14);
         title('dp/dt time Evolution');
-        saveas(gcf,filename3);
+        filename3 = fullfile('Figure 3',[ num2str(a/1000), '.png']);
+        %saveas(gcf,filename3);
+
+        saveas(gcf,filename1);
 
         interp_p = interp_data( L, n, R, scale_down, r, p, two_body);
         interp_surf( L, interp_p, n, a, N, scale_down, savets);
 
         filename4 = fullfile('Figure 4',[ num2str(a/1000), '.png']);
-        saveas(gcf,filename4);
+        %saveas(gcf,filename4);
 
         figure(5);
         plot( r(1:lim), log(p(1:lim) / two_body) ); 
-        xlabel('radial distance (Angstroms)', 'FontSize', 16);
+        xlabel('Radial Distance (Angstroms)', 'FontSize', 16);
         ylabel('p','FontSize',16);
         title(['ln(p)',  'T = ', num2str(T), ' density = ', num2str(two_body)]);
         filename5= fullfile('Figure 5', [ num2str(a/1000), '.png']);
-        saveas(gcf,filename5);
+        %saveas(gcf,filename5);
     end
     
     % Stopping criterion
     subset_p = p(1:(0.5 * size(p)));
     subset_change = change(1:(0.5 * size(change)));
-    if max( abs(subset_change))/max( subset_p ) < 0.06 && a > 15000
+    if max( abs(subset_change))/max( subset_p ) < 0.2 && a > 15000
     %if max( abs( change ) ) / max( p ) < 0.01 % Try decreasing and see how p changes
         break;
     end
@@ -213,4 +229,4 @@ filename = sprintf('Step_%d', a);
 save(filename);
 
 % Save data for use in one_body distribution program
-prep_onebody;
+%prep_onebody;

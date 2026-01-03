@@ -23,7 +23,7 @@ sharedParams = load_params(fullfile(configDir, 'shared', 'shared_params.json'));
 onebodyParams = load_params(fullfile(configDir, 'one_body', 'one_body_params.json'));
 
 % Loading.mat with p__hole (p__star in other code) v functions
-dataFile = fullfile(projectRoot, 'local data','converged_two_body', 'conv_hole_1300_new.mat'); %%% Make sure to use formatted strings and adhere to convention to make it work seamlessly btwn Temps
+dataFile = fullfile(projectRoot, 'local data','converged_two_body', 'conv_hole_1300_sparse.mat'); %%% Make sure to use formatted strings and adhere to convention to make it work seamlessly btwn Temps
 data = load(dataFile);
 
 % General Parameters
@@ -51,7 +51,13 @@ N_A = N/(L^2);         % This is 0.1362 N/Angstrom^2 (One body density)
 
 % Initialize p_hole and v (in two dimensions from 1D)
 p_hole = interp_data_spectral(L, n, data.L, 2, data.r, data.p__star); %horrible interface change it ASAP
-v = interp_data_spectral(L, n, data.L, 2, data.r, data.v); %2 needs to be generalized
+v = interp_data_spectral(L, n, data.L, 2, data.r, data.v); % needs to be generalized
+
+f1 = poly_solver([[0 10 0], [0 -5 1], [0 -4 2]], 'r');
+z = bessel_root( 1, n )';
+r= 6*Re / z(n) * z;
+v_tmp = morse_modified(r, f1, 0.1 * Re, 0.75 * Re);
+v = interp_data_spectral(L, n, data.L, 2, r, v_tmp);
 
 % Plotting parameters
 total_step = 40000000;  % total number of steps

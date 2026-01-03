@@ -59,7 +59,7 @@ y2 = ones(1,n+1)' * linspace (-L/2,L/2,n+1);
 y2 = y2(1:end-1, 1:end-1);
 
 % Normalize the probability density matrix
-p0_12 = p0_12 * (N * (N-1) / L^4) / (sum(p0_12(:)) * dA); 
+p0_12 = p0_12 * (N * (N-1) / L^2) / (sum(p0_12(:)) * dA); 
 
 % Adding perturbation to simulation box
 p1 = ones(n);
@@ -75,6 +75,9 @@ p2=p1;
 
 % Plot the initial case
 Plot3D(1, x2, y2, p1);
+title('Evolution of p(1) [atoms/Angstrom^2] Step: 0');
+filename1= fullfile('onebody', [ num2str(0), '.png']);
+saveas(gcf,filename1);
 
 % Speed up Fast Fourier Transforms
  fftw('dwisdom', []);
@@ -191,11 +194,12 @@ for s = start:total_step %changed start to 1000
     % Plot Data
     if mod(s, plotting_step) == 0
         Plot3D(1, x2, y2, p1);
+        title(['Evolution of p(1) [atoms/Angstrom^2] | Step: ', num2str(s)]);
         %Plot3D(2, s, n , kbT, N, x2, y2, first);
         %Plot3D(3, s, n , kbT, N, x2, y2, second);
         figure(1);
-        filename1= fullfile('y', [ num2str(a/plotting_step), '.png']);
-        % saveas(gcf,filename1);
+        filename1= fullfile('onebody', [ num2str(s), '.png']);
+        saveas(gcf,filename1);
     end
     if s == 1
         grad_p1_x = gpuArray(grad_p1_x);
